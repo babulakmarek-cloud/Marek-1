@@ -40,7 +40,7 @@ sheet("Otopná tělesa",["Popisek","Počet","Výkon W (nejbližší popisek P≈
 rows=[[t["t"],int(re.sub(r"\D","",t["t"])),t["x"],t["y"],t["layer"]] for t in texts if re.fullmatch(r"DN\s?\d+",t["t"])]
 sheet("DN popisky",["Popisek","DN","X mm","Y mm","Hladina"],rows)
 # místnosti a ostatní popisy
-rows=[[t["t"],t["x"],t["y"],t["layer"]] for t in texts if t["layer"] in ("A06_Text","A06_Text  -Belegung","A0_Grundriß") and not re.fullmatch(r"[\d.,\s]+",t["t"])]
+rows=[[t["t"],t["x"],t["y"],t["layer"]] for t in texts if (t["layer"] in ("A06_Text","A06_Text  -Belegung","A0_Grundriß") or t["layer"]=="PDF_000000") and not re.search(r"heizk|^P\s*[≈=]|^DN",t["t"],re.I) and not re.fullmatch(r"[\d.,\s]+",t["t"])]
 sheet("Popisy dispozice",["Text","X mm","Y mm","Hladina"],rows)
 notes=[
  ["Zdroj","DXF výkres (jednotky mm). Hodnoty vytěženy automaticky skriptem tools/make_soupis.py."],
