@@ -12,10 +12,11 @@ Pracovní soubor: **`vystupy/MHBIM_zadavaci_list.xlsx`**
 List se dá znovu vygenerovat příkazem `python tools/make_mhbim_list.py`.
 
 ## Hotovo
+- **Versorgungsgang**: čisté podklady `Versorgungsgang_arch.dxf` / `_heiz.dxf` (posun 20618,69827).
 - **6.OG**: čisté podklady `vystupy/podklady_mhbim/6OG_arch.dxf` a `6OG_heiz.dxf`, posunuté na vztažný bod osa 39 × osa E. Podrobnosti v `vystupy/podklady_mhbim/README.md`.
 
 ## 1. Podklady (AutoCAD / Python, na PC)
-1. **Vztažný bod**: průsečík osy 39 a osy E. V 6.OG leží na X = 24331, Y = 68325 (mm). U každého dalšího podlaží ověř, že je tam stejný průsečík, a jeho souřadnice zapiš do listu Podlaží.
+1. **Vztažný bod**: průsečík osy 39 a osy E. **Každé podlaží ho má na jiných souřadnicích** (6.OG 24331,68325; Versorgungsgang 20618,69827), proto ho zjisti pro každé zvlášť (návod v `vystupy/podklady_mhbim/README.md`) a zapiš do listu Podlaží. Dávka `priprav_podklady.bat` proto dává smysl jen pro jeden výkres nebo výkresy se stejnými souřadnicemi.
 2. Pro každé DXF podlaží spusť:
    ```
    pip install ezdxf

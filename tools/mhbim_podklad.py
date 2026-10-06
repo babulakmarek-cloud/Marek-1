@@ -14,6 +14,8 @@ Co dělá:
   - odstraní nepoužité bloky a hladiny (purge),
   - volitelně posune celý výkres o -X,-Y (společný vztažný bod pro všechna podlaží),
   - nastaví jednotky mm a uloží DXF ve stejné verzi jako vstup (Werk 2: AC1024 = AutoCAD 2010).
+Záporné hodnoty zapisuj se rovnítkem, jinak je argparse vezme jako přepínač:
+  --oblast=-7000,15000,80000,102000   --posun=-1530000,-1960000
 Výchozí skupiny hladin vycházejí z názvů ve výkresech Werk 2
 (A0… + Nord-Pfeil = stavba/kóty/osy/text, Heiz…/HEIZUNG… = topení). U jiných výkresů nejdřív --seznam.
 """

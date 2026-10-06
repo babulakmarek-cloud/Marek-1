@@ -35,13 +35,14 @@ Podrobný postup: `docs/MH_BIM_postup.md`. Pracovní list: `vystupy/MHBIM_zadava
 
 | Podlaží | Čistý podklad pro MH BIM | Model v MH BIM |
 |---|---|---|
-| 6.OG | **hotovo** – `vystupy/podklady_mhbim/6OG_arch.dxf`, `6OG_heiz.dxf` | nezačato |
+| 6.OG | **hotovo** – `vystupy/podklady_mhbim/6OG_*.dxf` | nezačato |
+| Versorgungsgang | **hotovo** – `vystupy/podklady_mhbim/Versorgungsgang_*.dxf` | nezačato |
 | 1.UG, 3.OG, 4.OG, 5.OG | spustit lokálně (DXF > 10 MB) | nezačato |
 | EG, 1.OG, 2.OG | nejdřív AutoCAD (DWG→DXF / PURGE), pak skript | nezačato |
 | Sozialgebäude | vlastní posun (jiný souřadný systém) | nezačato |
 | Dachbereich/Außentank | DXF z PDF bez os – umístit ručně | nezačato |
 
-**Vztažný bod (0,0):** průsečík osy 39 a osy E, v 6.OG X = 24331, Y = 68325. Shodu souřadnic ostatních podlaží je ještě potřeba ověřit.
+**Vztažný bod (0,0):** průsečík osy 39 a osy E. **Podlaží mají v DXF různé souřadnice** (6.OG 24331/68325, Versorgungsgang 20618/69827), proto se každé posouvá zvlášť. Převod DWG→DXF v cloudu: LibreDWG 0.13.3 + `tools/dxf_oprav_zalomeni.py`.
 Práce přímo v MH BIM vyžaduje relaci v desktopové aplikaci Claude se zapnutým Computer use (cloudová relace na plochu nedosáhne).
 
 ## Plán / doporučený postup
