@@ -50,11 +50,13 @@ for f, pod, kod in PODLAZI:
             tel.append([pod, r[0], cnt, r[2], r[4], r[5], r[6], "", "", ""])
         for r in list(x["Potrubí dle hladin"].iter_rows(values_only=True))[1:]:
             hladiny.setdefault(r[0], {})[pod] = r[4]
+    hotovo = pod == "6.OG"
     rows.append([pod, "ano" if f else "NE", DXF_STAV.get(pod, "DXF čitelné (příloha)"), n if f else None, s if f else None,
-                 q_abg.get(kod), "", "", "", ""])
+                 q_abg.get(kod), "", "24331,68325 (osa 39 × E)" if hotovo else "",
+                 "podklad hotov: vystupy/podklady_mhbim/6OG_*.dxf" if hotovo else "", ""])
 ws = sheet("Podlaží", ["Podlaží", "Soupis hotov", "Podklad DXF/DWG", "Počet těles (výkres)", "Σ výkon těles W (výkres, nejbližší popisek)",
                        "Q Hochbau BA.A dle Abgleich W (jen Vt 01, odhad)", "Výška podlaží / kóta (doplnit)", "Vztažný bod X,Y (doplnit)",
-                       "Podklad vložen v MH BIM", "Poznámka"], rows, {1: 24, 3: 30, 5: 26, 6: 26})
+                       "Čistý podklad / vložen v MH BIM", "Poznámka"], rows, {1: 24, 3: 30, 5: 26, 6: 26})
 ws.append([]); ws.append(["Pozn.: Σ výkon z výkresu ≠ Q z Abgleich – Abgleich uvádí jen BA.A přes Verteiler 01 a jde o odhady; "
                           "výkres obsahuje všechna tělesa podlaží. Slouží jen jako hrubá kontrola. U '3x …' není ověřeno, zda výkon platí na kus. 1.UG je přiřazeno ke KG z Abgleich (předpoklad)."])
 
@@ -80,7 +82,7 @@ kroky = [
     ("0", "Projekt", "Založit projekt v mh-Projektverwaltung (lokální disk s písmenem, ne UNC/cloud)."),
     ("0", "Projekt", "Zadat Liegenschaft: Brembocher Str. 37 (pravopis dle PDF – ověřit), 79589 Lörrach; klimadata dle lokality (DWD TRY)."),
     ("1", "Podklady", "Pro každé podlaží: tools/mhbim_podklad.py --seznam, pak export čistého DXF se SPOLEČNÝM vztažným bodem."),
-    ("1", "Podklady", "Vztažný bod = průsečík os / roh nosné konstrukce, který je ve všech podlažích. Sozialgebäude má jiný souřadný systém (X≈-1,5 mil.) – posun nutný."),
+    ("1", "Podklady", "Vztažný bod = průsečík osy 39 a osy E (v 6.OG X=24331, Y=68325). Ověřit, že ostatní podlaží mají stejnou osovou síť a souřadnice. Sozialgebäude má jiný souřadný systém (X≈-1,5 mil.) – posun nutný."),
     ("1", "Podklady", "1.OG, 2.OG: v AutoCADu nejdřív PURGE/AUDIT/WBLOCK (DXF 790–900 MB). EG: DWG→DXF v AutoCADu / ODA."),
     ("2", "Budova", "Založit podlaží a kóty/výšky (list Podlaží – sloupec G)."),
     ("2", "Budova", "Vložit podkladové DXF do každého podlaží, zkontrolovat jednotky mm a překryv podlaží."),

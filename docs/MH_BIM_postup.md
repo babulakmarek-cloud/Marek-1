@@ -11,8 +11,11 @@ Pracovní soubor: **`vystupy/MHBIM_zadavaci_list.xlsx`**
 
 List se dá znovu vygenerovat příkazem `python tools/make_mhbim_list.py`.
 
+## Hotovo
+- **6.OG**: čisté podklady `vystupy/podklady_mhbim/6OG_arch.dxf` a `6OG_heiz.dxf`, posunuté na vztažný bod osa 39 × osa E. Podrobnosti v `vystupy/podklady_mhbim/README.md`.
+
 ## 1. Podklady (AutoCAD / Python, na PC)
-1. **Vyber vztažný bod**: průsečík os nebo roh nosné konstrukce, který je vidět na všech podlažích. Jeho souřadnice (mm) zapiš do listu Podlaží.
+1. **Vztažný bod**: průsečík osy 39 a osy E. V 6.OG leží na X = 24331, Y = 68325 (mm). U každého dalšího podlaží ověř, že je tam stejný průsečík, a jeho souřadnice zapiš do listu Podlaží.
 2. Pro každé DXF podlaží spusť:
    ```
    pip install ezdxf
@@ -24,6 +27,7 @@ List se dá znovu vygenerovat příkazem `python tools/make_mhbim_list.py`.
    python tools\mhbim_podklad.py 6OG.dxf 6OG_arch.dxf --profil arch --posun X,Y --bez-srafy
    python tools\mhbim_podklad.py 6OG.dxf 6OG_heiz.dxf --profil heiz --posun X,Y
    ```
+   `--oblast XMIN,YMIN,XMAX,YMAX` ořízne situaci a razítko (v 6.OG: `15000,60000,178000,95000`).
    Pro celou složku najednou: `tools\priprav_podklady.bat X,Y` (výstup jde do `mhbim\`).
 4. Pozor:
    - **Sozialgebäude** leží v jiném souřadném systému (tělesa mají X ≈ −1,5 mil. mm), takže potřebuje vlastní posun. Do dávky ho nedávej.
