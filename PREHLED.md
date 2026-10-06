@@ -30,6 +30,9 @@ Ruční shoda 6 kót na 1.UG dala poměr skutečná/nominální délka ≈ 0,985
 - Projektové složky `.mh8`/`.mhb8`/`.mhz8` se nesmí upravovat mimo mh-Projektverwaltung. Cesta musí jít přes písmeno disku (ne UNC), bez cloudové synchronizace.
 - Web výrobce (mh-software.de) je z cloudu blokovaný; poznatky v `docs/web/` jsou jen ze snippetů vyhledávače a **neověřené**.
 
+## Start v MH BIM
+Podrobný postup: `docs/MH_BIM_postup.md`. Pracovní list: `vystupy/MHBIM_zadavaci_list.xlsx`. Čištění podkladů: `tools/mhbim_podklad.py` (+ `tools/priprav_podklady.bat`).
+
 ## Plán / doporučený postup
 1. Z DXF/DWG po podlažích vytěžit soupisy: místnosti, otopná tělesa (typ, výkon), potrubí (trasy, DN), zařízení.
 2. Připravit čisté podkladové DXF/DWG (pojmenované hladiny, jen relevantní prvky) pro vložení do MH BIM.
