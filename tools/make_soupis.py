@@ -42,4 +42,14 @@ sheet("DN popisky",["Popisek","DN","X mm","Y mm","Hladina"],rows)
 # místnosti a ostatní popisy
 rows=[[t["t"],t["x"],t["y"],t["layer"]] for t in texts if t["layer"] in ("A06_Text","A06_Text  -Belegung","A0_Grundriß") and not re.fullmatch(r"[\d.,\s]+",t["t"])]
 sheet("Popisy dispozice",["Text","X mm","Y mm","Hladina"],rows)
+notes=[
+ ["Zdroj","DXF výkres (jednotky mm). Hodnoty vytěženy automaticky skriptem tools/make_soupis.py."],
+ ["Délky potrubí","Součet délek LINE/ARC/SPLINE a otevřených polylinií na hladinách 'Heiz…'. Uzavřené polylinie, kružnice a elipsy vyřazeny (symboly těles/armatur). Jde o délku kresby, ne o ověřenou délku trubek."],
+ ["Kontrola V/R","U procesních okruhů přívod a zpátečka délkou sedí. U okruhů k otopným tělesům může být přívod nadhodnocen (symboly kreslené čarami na hladině přívodu) – ověřit ve výkresu."],
+ ["Výkon těles","Párováno k nejbližšímu popisku 'P ≈ … W' (typicky 750 mm pod názvem; vzdálenost uvedena pro kontrolu). U '3x …' NENÍ ověřeno, zda výkon platí na kus, nebo celkem."],
+ ["Označení těles","Význam čísel (např. 42/900/100 = články/výška/hloubka?) není ověřen."],
+ ["DN popisky","Pouze textové popisky s polohou; přiřazení ke konkrétnímu úseku potrubí nebylo provedeno."],
+]
+sheet("Poznámky",["Téma","Poznámka"],notes)
+wb.move_sheet("Poznámky", offset=-len(wb.sheetnames)+1)
 wb.save(out); print("saved",out,[ (ws.title,ws.max_row-1) for ws in wb])
