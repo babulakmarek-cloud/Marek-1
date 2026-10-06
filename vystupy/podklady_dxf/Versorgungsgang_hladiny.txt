@@ -1,0 +1,24 @@
+ponecháno	prvků
+A05_Bemaßung	319
+A06_Text - Unterzüge	199
+Heiz Wasser +70 Prozess R	71
+Heiz Wasser +90 Prozess V	70
+Heiz Wasser +60 -Heizkörper Vorlauf	48
+A07_Achslinien	44
+Heiz Wasser +50 -Heizkörper Rücklauff	43
+A04_Treppen	39
+A0_Grundriß	27
+HEIZUNG Rücklauf	11
+HEIZUNG Vorlauf	11
+Geometrie	8
+A06_Text	5
+A03_Türen	4
+Nord-Pfeil	1
+
+odstraněno	prvků
+Lageplan	6242
+A11_Unterzüge	637
+AM_Views	5
+41	1
+TREPPEN	1
+NEBENGEB	1

@@ -1,0 +1,21 @@
+ponecháno	prvků
+A0_Grundriß	744
+A05_Bemaßung	200
+A07_Achslinien	106
+Heiz Wasser +90 Prozess V	59
+Heiz Wasser +70 Prozess R	54
+Heiz Wasser +60 -Heizkörper Vorlauf	49
+A03_Türen	38
+Heiz Wasser +50 -Heizkörper Rücklauff	31
+A06_Text	27
+HEIZUNG VORLAUF	21
+Geometrie	19
+Heiz Wasser +90 Klima V (luftung)	15
+HEIZUNG RÜCKLAUF	12
+Heiz Wasser +70 Klima R (luftung)	11
+Heiz Wasser blind	8
+Nord-Pfeil	1
+Maßstab	1
+
+odstraněno	prvků
+AM_Views	5

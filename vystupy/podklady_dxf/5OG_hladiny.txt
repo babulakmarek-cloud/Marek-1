@@ -1,0 +1,30 @@
+ponecháno	prvků
+A0_Grundriß	1098
+Heiz Wasser +60 -Heizkörper Vorlauf	511
+A05_Bemaßung	200
+A07_Achslinien	119
+Heiz Wasser +90 Prozess V	110
+Heiz Wasser +70 Prozess R	107
+Heiz Wasser +50 -Heizkörper Rücklauff	107
+A04_Treppen	92
+Heiz Wasser +45 Prozess V	90
+Heiz Wasser +35 Prozess R	74
+A03_Türen	67
+Maßstab	67
+Heiz Wasser +70 Klima R (luftung)	42
+Heiz Wasser +90 Klima V (luftung)	42
+A06_Text	32
+A06_Text  -Belegung-	27
+Heiz Wasser blind	11
+
+odstraněno	prvků
+A11_Belegung	176035
+A12_EL_Verteiler	3449
+A12_Symbole	2921
+0	793
+A11_Unterzüge	150
+Weiß	41
+Allg_TDB-Tagsets	39
+AR_Gebaeude	12
+AM_Views	3
+NULL	3

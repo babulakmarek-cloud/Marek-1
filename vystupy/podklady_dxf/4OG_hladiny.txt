@@ -1,0 +1,66 @@
+ponecháno	prvků
+A0_Grundriß	1088
+A05_Bemaßung	200
+A04_Treppen	167
+Heiz Wasser +60 -Heizkörper Vorlauf	165
+Heiz Wasser +50 -Heizkörper Rücklauff	126
+A07_Achslinien	114
+A03_Türen	86
+Maßstab	67
+A06_Text  -Unterzüge	50
+Heiz Wasser +90 Prozess V	50
+Heiz Wasser blind	47
+Heiz Wasser +70 Prozess R	39
+Heiz Wasser +45 Prozess V	32
+A06_Text	30
+Heiz Wasser +35 Prozess R	12
+Heiz Wasser +90 Klima V (luftung)	12
+Heiz Wasser +70 Klima R (luftung)	11
+A06_Text  -Belegung	6
+Nord-Pfeil	1
+
+odstraněno	prvků
+A11_Belegung	134341
+0	14667
+Lageplan	6238
+nasco	1245
+A12_Symbole	1065
+Wendel-W&D1	566
+Wendel Bindler1	504
+VOLANTINO-66481 D_50 MASCHIO	376
+1	328
+AM_0N	248
+assi	247
+A12_EL_Verteiler	242
+AM_3	240
+v	204
+campit	181
+DIN-VL70	150
+A11_Unterzüge	142
+Nascosta (ISO)	102
+AM_3N	88
+AM_7	76
+Level 61	66
+Visibile (ISO)	58
+Asse	46
+AM_9N	40
+AM_7N	32
+AM_0	32
+Verteiler INFRA	25
+Linea d'asse (ISO)	20
+AM_4N	20
+DIN-SL35	16
+DIN-SP35	13
+Armatury	13
+Allg_TDB-Tagsets	12
+TEXTI	9
+Sichtbar (ISO)	8
+FGk2+3 neu	7
+UNI	5
+Level 3	4
+Centro (ISO)	4
+richiami	2
+AM_Views	1
+41	1
+TREPPE	1
+NEBENGEB	1

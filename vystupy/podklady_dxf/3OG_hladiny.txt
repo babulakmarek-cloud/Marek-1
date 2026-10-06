@@ -1,0 +1,47 @@
+ponecháno	prvků
+A0_Grundriß	1113
+Heiz Wasser +60 -Heizkörper Vorlauf	494
+A05_Bemaßung	200
+Heiz Wasser +50 -Heizkörper Rücklauff	173
+A04_Treppen	161
+Heiz Wasser +90 Prozess V	152
+A07_Achslinien	132
+Heiz Wasser +70 Prozess R	128
+A06_Text  -Unterzüge-	101
+A03_Türen	100
+Heiz Wasser +45 Prozess V	68
+Heiz Wasser +35 Prozess R	53
+Maßstab	46
+A06_Text  -Belegung	43
+A06_Text	26
+Heiz Wasser blind	24
+Heiz Wasser +90 Klima V (luftung)	20
+Heiz Wasser +70 Klima R (luftung)	18
+Armaturen	12
+Heiz Wasser +60 Prozess V	8
+Heiz Wasser +50 Prozess R	4
+Nord-Pfeil	1
+
+odstraněno	prvků
+A11_Belegung	41545
+Lageplan	6238
+0	4853
+A12_EL_Verteiler	360
+A11_Unterzüge	139
+AM_PAREF	86
+EL_Verteiler	60
+AM_0N	60
+Weiß	57
+AM_7N	15
+A12_Symbole	11
+AM_8	9
+Massekreis CDM- Deckel	7
+AR_Gebaeude	6
+AM_Views	5
+Reaktor Dessert	4
+Level 3	4
+Text	2
+Massekreis CDM Hülse SK	1
+41	1
+TREPPE	1
+NEBENGEB	1

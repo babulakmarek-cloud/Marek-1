@@ -1,0 +1,54 @@
+ponecháno	prvků
+A0_Grundriß	4594
+Heiz Wasser +45 Prozess V	948
+Heiz Wasser +35 Prozess R	937
+Heiz Wasser +60 -Heizkörper Vorlauf	786
+Heiz Wasser +50 -Heizkörper Rücklauff	479
+A03_Türen	416
+A04_Treppen	378
+A05_Bemaßung	319
+Heiz Wasser +90 Prozess V	294
+Heiz Wasser +70 Prozess R	277
+A06_Text - Unterzüge	199
+A06_Text	188
+A06_Text  -Belegung	171
+A07_Achslinien	162
+Maßstab	67
+Heiz Wasser +70 Klima R (luftung)	66
+Heiz Wasser +90 Klima V (luftung)	63
+Heiz Wasser +50 Prozess R	40
+Heiz Wasser +60 Prozess V	40
+A0_Grundriß_Versorgungskanal	36
+Heiz Wasser blind	36
+Geometrie_Bestand	33
+
+odstraněno	prvků
+A11_Belegung	96861
+Kugelmischer	13869
+0	12846
+Level 31	6946
+A12_EL_Verteiler	2604
+Level 1	1184
+648_Rollenbahn_Layout	929
+Level 13	691
+A11_Unterzüge	637
+642_Exzenterhubtisch_Layout	389
+Sichtbar (ISO)	339
+Weiß	151
+Beschläge	60
+Kugelmischer_2023_02_21_NEU	55
+Auspacker2	28
+Fundamente	28
+Allg_TDB-Tagsets	20
+Level 61	16
+Rammschutz	14
+Level 3	12
+Level 16	10
+AM_0	8
+Level 15	8
+AM_Views	5
+Lageplan	4
+Level 14	2
+Level 11	2
+ACHSE	1
+ANTRIEB	1

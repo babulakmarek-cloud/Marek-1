@@ -1,0 +1,30 @@
+ponecháno	prvků
+A0_Grundriß	2824
+Heiz Wasser +60 -Heizkörper Vorlauf	448
+Heiz Wasser +50 -Heizkörper Rücklauff	111
+Heiz Wasser +90 Prozess V	25
+Heiz Wasser +70 Prozess R	22
+Nord-Pfeil	5
+HEIZUNG VORLAUF	1
+Heiz Wasser +70 Klima R (luftung)	1
+
+odstraněno	prvků
+Lageplan	43651
+Konstruktion innen	1309
+Tür	1040
+Hell	934
+Fenster	785
+Treppen	434
+Tür - skizziert	298
+Legend	255
+A_Wohnung	97
+Treppen - skizziert	66
+0	61
+Treppen Teilung	42
+REPAIR	28
+Blechverkleidung	12
+A_Hilfe	8
+41	7
+NEBENGEB	7
+Kolecko zkontrolovat	6
+Weiß	4
