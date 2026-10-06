@@ -31,7 +31,18 @@ Ruční shoda 6 kót na 1.UG dala poměr skutečná/nominální délka ≈ 0,985
 - Web výrobce (mh-software.de) je z cloudu blokovaný; poznatky v `docs/web/` jsou jen ze snippetů vyhledávače a **neověřené**.
 
 ## Start v MH BIM
-Podrobný postup: `docs/MH_BIM_postup.md`. Pracovní list: `vystupy/MHBIM_zadavaci_list.xlsx`. Čištění podkladů: `tools/mhbim_podklad.py` (+ `tools/priprav_podklady.bat`).
+Podrobný postup: `docs/MH_BIM_postup.md`. Pracovní list: `vystupy/MHBIM_zadavaci_list.xlsx`. Čištění podkladů: `tools/mhbim_podklad.py` (+ `tools/priprav_podklady.bat X Y ["oblast"]`).
+
+| Podlaží | Čistý podklad pro MH BIM | Model v MH BIM |
+|---|---|---|
+| 6.OG | **hotovo** – `vystupy/podklady_mhbim/6OG_arch.dxf`, `6OG_heiz.dxf` | nezačato |
+| 1.UG, 3.OG, 4.OG, 5.OG | spustit lokálně (DXF > 10 MB) | nezačato |
+| EG, 1.OG, 2.OG | nejdřív AutoCAD (DWG→DXF / PURGE), pak skript | nezačato |
+| Sozialgebäude | vlastní posun (jiný souřadný systém) | nezačato |
+| Dachbereich/Außentank | DXF z PDF bez os – umístit ručně | nezačato |
+
+**Vztažný bod (0,0):** průsečík osy 39 a osy E, v 6.OG X = 24331, Y = 68325. Shodu souřadnic ostatních podlaží je ještě potřeba ověřit.
+Práce přímo v MH BIM vyžaduje relaci v desktopové aplikaci Claude se zapnutým Computer use (cloudová relace na plochu nedosáhne).
 
 ## Plán / doporučený postup
 1. Z DXF/DWG po podlažích vytěžit soupisy: místnosti, otopná tělesa (typ, výkon), potrubí (trasy, DN), zařízení.
