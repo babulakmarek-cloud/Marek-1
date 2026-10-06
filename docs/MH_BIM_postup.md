@@ -28,7 +28,7 @@ List se dá znovu vygenerovat příkazem `python tools/make_mhbim_list.py`.
    python tools\mhbim_podklad.py 6OG.dxf 6OG_heiz.dxf --profil heiz --posun X,Y
    ```
    `--oblast XMIN,YMIN,XMAX,YMAX` ořízne situaci a razítko (v 6.OG: `15000,60000,178000,95000`).
-   Pro celou složku najednou: `tools\priprav_podklady.bat X,Y` (výstup jde do `mhbim\`).
+   Pro celou složku najednou: `tools\priprav_podklady.bat 24331 68325 "15000,60000,178000,95000"` (X a Y odděl mezerou, oblast dej do uvozovek) (výstup jde do `mhbim\`).
 4. Pozor:
    - **Sozialgebäude** leží v jiném souřadném systému (tělesa mají X ≈ −1,5 mil. mm), takže potřebuje vlastní posun. Do dávky ho nedávej.
    - **1.OG / 2.OG** (790–900 MB): nejdřív v AutoCADu `AUDIT`, `PURGE` a `WBLOCK` jen modelu, teprve potom skript.
