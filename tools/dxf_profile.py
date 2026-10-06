@@ -1,0 +1,11 @@
+import sys, collections, ezdxf
+d = ezdxf.readfile(sys.argv[1]); m = d.modelspace()
+print("version", d.dxfversion, "units", d.units, "layers", len(d.layers), "blocks", len(d.blocks))
+ents = list(m); print("modelspace entities", len(ents))
+print("types", collections.Counter(e.dxftype() for e in ents).most_common(12))
+lc = collections.Counter(e.dxf.layer for e in ents)
+print("TOP LAYERS (entities):")
+for k,v in lc.most_common(45): print(f"  {v:7d}  {k}")
+ins = collections.Counter(e.dxf.name for e in ents if e.dxftype()=="INSERT")
+print("TOP BLOCKS inserted:", len(ins))
+for k,v in ins.most_common(25): print(f"  {v:6d}  {k}")
