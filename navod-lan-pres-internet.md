@@ -176,6 +176,90 @@ Využijte `easy-rsa` pro vytvoření CA, serverového certifikátu a klientskýc
 
 ---
 
+## Seznam potřebných materiálů
+
+### Pro všechny varianty
+| Co | Poznámka |
+|---|---|
+| Počítač nebo telefon u každého účastníka | Windows, macOS, Linux, Android nebo iOS |
+| Funkční připojení k internetu | Pro hry je vhodná odezva pod 50 ms. |
+| Účet správce na počítači | Instalace klienta vyžaduje administrátorská práva. |
+| E-mailová adresa | Pro registraci (ZeroTier, Tailscale, Hamachi). |
+| Dohodnuté sdílení údajů | Network ID, název sítě a heslo. Předávejte je soukromě. |
+
+### Podle varianty
+- **ZeroTier, Tailscale, Radmin VPN, Hamachi:** účet na službě (u Radmin VPN není potřeba) a klient z oficiálních stránek. Žádný server ani úprava routeru. Radmin VPN funguje jen na Windows.
+- **WireGuard:** server (VPS s Linuxem, nebo domácí počítač či Raspberry Pi běžící nepřetržitě), veřejná IP nebo doména (u dynamické IP DDNS), přístup do routeru kvůli port forwardingu (UDP 51820), SSH přístup a klient na každém zařízení.
+- **OpenVPN:** totéž, ale port UDP 1194. Navíc instalační skript z GitHubu a klient OpenVPN Connect.
+
+### Doporučené vybavení navíc
+| Co | Proč |
+|---|---|
+| Záloha klíčů a konfigurací (`.ovpn`, `*.key`) | Obnova po ztrátě serveru. Uchovávejte je v soukromí. |
+| Správce hesel | Bezpečné uložení hesel a klíčů. |
+| UPS pro domácí server | Server běží nepřetržitě. |
+| DHCP rezervace pro server v routeru | Port forwarding by jinak přestal fungovat. |
+
+### Kontrola před začátkem
+- [ ] Operátor vám nedává IP za CGNAT. Pokud ano, použijte ZeroTier, Tailscale nebo VPS.
+- [ ] Windows má síť nastavenou jako **Soukromá**, pokud chcete sdílet soubory.
+- [ ] Firewall povoluje potřebný UDP port.
+- [ ] Máte přístup k administraci routeru (pro server doma).
+
+---
+
+## Kde co objednat (Česko)
+
+Ceny a dostupnost se mění, před nákupem je ověřte na webu obchodu.
+
+### Hardware (server doma, Raspberry Pi, UPS, router)
+| Obchod | Web | Co tam hledat |
+|---|---|---|
+| Alza | https://www.alza.cz | Mini PC, Raspberry Pi, UPS, routery, SSD, kabely |
+| CZC.cz | https://www.czc.cz | Mini PC, UPS, routery, síťové prvky |
+| Mironet | https://www.mironet.cz | Počítače, síťové prvky, UPS |
+| RPishop.cz | https://rpishop.cz | Raspberry Pi, napájecí zdroje, microSD, pouzdra |
+| Laskakit | https://www.laskakit.cz | Raspberry Pi a příslušenství |
+
+Pro domácí VPN server stačí Raspberry Pi 4/5 nebo malé mini PC, napájecí zdroj, microSD karta (min. 16 GB) nebo SSD a ethernetový kabel (server připojte kabelem, ne Wi-Fi).
+
+### VPS server (pro WireGuard / OpenVPN, bez port forwardingu doma)
+| Poskytovatel | Web | Poznámka |
+|---|---|---|
+| WEDOS | https://www.wedos.cz | Český poskytovatel, VPS s podporou v češtině |
+| Forpsi | https://www.forpsi.cz | Český poskytovatel, VPS |
+| Active24 | https://www.active24.cz | Český poskytovatel, VPS |
+| Hetzner Cloud | https://www.hetzner.com/cloud | Levný zahraniční (Německo), servery v EU |
+| Contabo | https://contabo.com | Levný zahraniční, více výkonu za cenu |
+
+Při objednávce zvolte Linux (Debian nebo Ubuntu LTS), 1 vCPU a 1 GB RAM. Pro VPN to stačí. Zvolte lokalitu v Evropě kvůli nízké odezvě.
+
+### DDNS (jen pro server doma s dynamickou IP)
+| Služba | Web |
+|---|---|
+| DuckDNS (zdarma) | https://www.duckdns.org |
+| No-IP | https://www.noip.com |
+
+---
+
+## Kde stáhnout (oficiální zdroje)
+
+Stahujte vždy z oficiálních stránek. Fungují i z Česka a jsou bezpečnější než zrcadla třetích stran.
+
+| Program | Odkaz ke stažení | Platformy |
+|---|---|---|
+| ZeroTier | https://www.zerotier.com/download/ | Windows, macOS, Linux, Android, iOS |
+| ZeroTier (konzole) | https://my.zerotier.com | Web |
+| Tailscale | https://tailscale.com/download | Windows, macOS, Linux, Android, iOS |
+| Radmin VPN | https://www.radmin-vpn.com/cz/ | Windows (česká verze stránek) |
+| Hamachi | https://vpn.net | Windows, macOS, Linux |
+| WireGuard | https://www.wireguard.com/install/ | Windows, macOS, Linux, Android, iOS |
+| OpenVPN Connect | https://openvpn.net/client/ | Windows, macOS, Linux, Android, iOS |
+| OpenVPN instalační skript | https://github.com/angristan/openvpn-install | Linux server |
+| Raspberry Pi Imager (zápis OS na kartu) | https://www.raspberrypi.com/software/ | Windows, macOS, Linux |
+
+---
+
 ## Bezpečnost
 
 - Sdílejte Network ID, hesla a klíče jen s důvěryhodnými lidmi.
