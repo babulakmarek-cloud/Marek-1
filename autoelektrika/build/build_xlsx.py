@@ -14,6 +14,8 @@ FU = 'Data!$D$3:$D$29'
 SV = 'Data!$F$3:$F$7'     # SOC: napětí
 SS = 'Data!$G$3:$G$7'     # SOC: %
 EE = 'Data!$I$3:$I$26'    # E24
+ST = 'Data!$K$3:$K$12'    # startér: standardní průřezy
+START = [10, 16, 25, 35, 50, 70, 95, 120, 150, 185]
 RHO = lambda t: f'(1/56*(1+0.00393*({t}-20)))'
 
 # ------------------------------------------------------------ NÁVOD
@@ -21,7 +23,7 @@ s = Sheet('Návod', widths=(110,))
 for line in [
     'Žlutá buňka = vstup (měň), modrá buňka = výsledek (vzorec). Listy odpovídají záložkám webové pomůcky.',
     '',
-    'Kabely a jištění: Úbytek a průřez | Pojistka a kabel | Výkon a proud (srovnání 12/24/48 V)',
+    'Kabely a jištění: Úbytek a průřez | Pojistka a kabel | Výkon a proud (srovnání 12/24/48 V) | Startér',
     'Baterie: Baterie (výdrž, stav nabití, nabíjení, sestavení)',
     'Zdroje a měniče: DC-DC střídač solár',
     'Energetická bilance a LED rezistor.',
@@ -119,6 +121,38 @@ for i, v in enumerate((12, 24, 48)):
     ws.cell(rr, 4, f'=IFERROR(INDEX({FU},MATCH(TRUE,INDEX({FU}>=B{rr}*1.25,0),0)),"–")')
     for cc in (2, 3, 4):
         ws.cell(rr, cc).border = BOX
+
+# ------------------------------------------------------------ STARTÉR
+s = Sheet('Startér', 'Špičkový proud při startu; celkový úbytek na + i − kabelu', widths=(44, 16, 14, 3, 10, 10, 10, 10, 10, 10, 10))
+ws = s.ws
+s.head('Vstupy')
+su = s.inp('Napětí soustavy', 12, 'V', [12, 24, 48])
+si = s.inp('Startovací proud (špička)', 250, 'A')
+slp = s.inp('Délka kladného kabelu', 1.5, 'm')
+sln = s.inp('Délka záporného kabelu / kostry', 0.5, 'm')
+slim = s.inp('Povolený úbytek celkem (12 V: 0,5; 24 V: 1)', 0.5, 'V')
+sth = s.inp('Teplota kabelu', 40, '°C')
+s.note('Typicky: benzín 150–250 A, diesel 250–450 A, nákladní 24 V 400–800 A. Rozhoduje údaj výrobce motoru.')
+s.gap()
+s.head('Výsledky')
+rr_ = s.calc('Odpor smyčky (délka · ρ)', f'={RHO(sth)}*({slp}+{sln})', 'Ω·mm²', '0.00000')
+smin = s.calc('Vypočtený min. průřez', f'={si}*{rr_}/{slim}', 'mm²', '0.0')
+sstd = s.calc('Doporučený průřez (+ i −)', f'=IFERROR(INDEX({ST},MATCH(TRUE,INDEX({ST}>={smin},0),0)),"> 185 – paralelní kabely")', 'mm²', '0', True)
+sdu = s.calc('Úbytek při startu', f'=IF(ISNUMBER({sstd}),{si}*{rr_}/{sstd},"–")', 'V', '0.00')
+s.calc('Hodnocení', f'=IF(ISNUMBER({sdu}),IF({sdu}<={slim},"OK","CHYBA – překročeno"),"–")', '', '@')
+s.status_cf(f'B{s.r-1}:B{s.r-1}')
+s.calc('Výkon při startu', f'={si}*{su}/1000', 'kW', '0.0')
+s.calc('Ztráty v kabelu při startu', f'=IF(ISNUMBER({sstd}),{si}^2*{rr_}/{sstd},"–")', 'W', '0')
+s.calc('Zbývá napětí na startéru (bez poklesu baterie)', f'=IF(ISNUMBER({sdu}),{su}-{sdu},"–")', 'V', '0.00')
+ws.cell(4, 5, 'Min. průřez [mm²], 12 V, 0,5 V, 40 °C: řádky = A, sloupce = m (+ i −)').font = Font(bold=True)
+for j, Lm in enumerate([1, 1.5, 2, 3, 4, 6]):
+    c = ws.cell(5, 6 + j, Lm); c.font = Font(bold=True); c.fill = SUB; c.border = BOX
+for i, Im in enumerate([100, 150, 200, 300, 400, 600]):
+    c = ws.cell(6 + i, 5, Im); c.font = Font(bold=True); c.fill = SUB; c.border = BOX
+    for j in range(6):
+        col = chr(70 + j)
+        c = ws.cell(6 + i, 6 + j, f'=IFERROR(INDEX({ST},MATCH(TRUE,INDEX({ST}>=$E{6+i}*{RHO(40)}*{col}$5/0.5,0),0)),">185")')
+        c.border = BOX
 
 # ------------------------------------------------------------ BATERIE
 s = Sheet('Baterie', 'Výdrž, stav nabití, nabíjení, sestavení')
@@ -346,12 +380,13 @@ for name, title, items in CHECKS:
     ws.conditional_formatting.add(f'A{first}:B{s.r-2}', FormulaRule(formula=[f'$B{first}="x"'], fill=GOOD))
 
 # ------------------------------------------------------------ DATA
-s = Sheet('Data', 'Pomocné tabulky (neodstraňovat)', widths=(10, 12, 3, 12, 3, 12, 8, 3, 10))
+s = Sheet('Data', 'Pomocné tabulky (neodstraňovat)', widths=(10, 12, 3, 12, 3, 12, 8, 3, 10, 3, 12))
 ws = s.ws
 table(ws, 2, 1, ['mm²', 'I trvalý A'], [list(c) for c in CAB])
 table(ws, 2, 4, ['Pojistky A'], [[f] for f in FUSES])
 table(ws, 2, 6, ['SOC V (12 V)', 'SOC %'], [list(p) for p in SOC12])
 table(ws, 2, 9, ['E24'], [[e] for e in E24])
+table(ws, 2, 11, ['Startér mm²'], [[x] for x in START])
 
 for w in wb.worksheets:
     w.sheet_view.showGridLines = False

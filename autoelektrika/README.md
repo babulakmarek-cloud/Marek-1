@@ -5,11 +5,11 @@ Tři verze téhož obsahu:
 | Soubor | K čemu |
 |---|---|
 | `index.html` | interaktivní webová pomůcka, offline, na PC i v telefonu. Přepínač 12 / 24 / 48 V přepíše výchozí hodnoty ve všech kartách |
-| `Pomucka_autoelektrika.xlsx` | Excel se živými vzorci (žlutá = vstup, modrá = výsledek), 12 listů |
-| `Tahak_autoelektrika.pdf` | tisknutelný tahák A4, 3 strany: vzorce, tabulky, checklisty s políčky |
+| `Pomucka_autoelektrika.xlsx` | Excel se živými vzorci (žlutá = vstup, modrá = výsledek), 13 listů |
+| `Tahak_autoelektrika.pdf` | tisknutelný tahák A4: vzorce, tabulky, checklisty s políčky |
 
 ## Obsah
-- **Kabely a jištění:** úbytek napětí a průřez (včetně kostry jako zpětného vodiče), pojistka + kabel + odhad zkratového proudu, výkon ↔ proud ↔ odpor, srovnání 12/24/48 V.
+- **Kabely a jištění:** úbytek napětí a průřez (včetně kostry jako zpětného vodiče), pojistka + kabel + odhad zkratového proudu, výkon ↔ proud ↔ odpor, srovnání 12/24/48 V, startér (startovací proud, kabel + a −, úbytek do 0,5 V / 1 V, tabulka min. průřezů podle proudu a délky).
 - **Baterie:** výdrž a kapacita, stav nabití olova z napětí, doba nabíjení, sestavení sériově/paralelně.
 - **Zdroje a měniče:** DC-DC měnič/nabíječ, střídač → 230 V, solární MPPT regulátor.
 - **Energetická bilance:** denní spotřeba, kapacita baterie a solár; LED + předřadný rezistor (řada E24).

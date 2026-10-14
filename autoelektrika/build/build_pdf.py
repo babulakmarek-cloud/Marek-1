@@ -48,6 +48,22 @@ def len_table():
     return tbl(['mm² \\ A'] + [str(i) for i in cur], rows, 'small')
 
 
+START = [10, 16, 25, 35, 50, 70, 95, 120, 150, 185]
+
+
+def start_table():
+    Ls = [1, 1.5, 2, 3, 4, 6]
+    rho40 = 1 / 56 * (1 + 0.00393 * 20)
+    rows = []
+    for i in (100, 150, 200, 300, 400, 600):
+        r = [str(i)]
+        for L in Ls:
+            m = i * rho40 * L / 0.5
+            r.append(str(next((x for x in START if x >= m), '>185')))
+        rows.append(r)
+    return tbl(['A \\ m'] + [fmt(L, 1) for L in Ls], rows, 'small')
+
+
 def soc_table():
     rows = []
     for v, p in reversed(SOC12):
@@ -170,11 +186,13 @@ footer{{margin-top:4mm;color:#5b6877;font-size:7.3pt}}
 <div class="cols">
 <div class="box2"><h3>Trvalý proud a max. pojistka</h3>{cable_table()}
 <p class="note">Konzervativní hodnoty pro měděné vodiče ve svazku.</p></div>
+<div class="box2"><h3>Startér — min. průřez [mm²]</h3>{start_table()}
+<p class="note">12 V, celkový úbytek 0,5 V (24 V: 1 V = poloviční průřez), 40 °C. Délka [m] = kladný + záporný kabel. S = I·ρ·L / ΔU. Typicky: benzín 150–250 A, diesel 250–450 A, nákladní 24 V 400–800 A.</p></div>
 <div class="box2"><h3>Max. délka kabelu pro úbytek 3 % (12 V)</h3>{len_table()}
 <p class="note">Délka jednosměrně [m], vlastní zpětný vodič, 50 °C. Pro 24 V × 2, pro 48 V × 4. × = proud přesahuje trvalou zatížitelnost kabelu.</p></div>
 </div>
 
-<h2 class="pg">3. Napětí, baterie, pojistky</h2>
+<h2>3. Napětí, baterie, pojistky</h2>
 <div class="cols">
 <div class="box2"><h3>Typická napětí podle soustavy</h3>{volt_table()}
 <p class="note">Orientační. Nabíjecí a odpojovací napětí řiď údaji výrobce baterie / BMS.</p></div>

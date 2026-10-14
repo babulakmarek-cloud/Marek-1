@@ -128,6 +128,19 @@ footer{max-width:1280px;margin:0 auto;padding:0 16px 30px;color:var(--mut);font-
   <div class="out" id="p_out"></div>
 </article>
 
+<article class="card" data-calc="calcStart">
+  <h3>Startér — kabel a úbytek</h3>
+  <p class="hint">Krátkodobý špičkový proud při startu. Celkový úbytek na + i − kabelu max. 0,5 V (12 V), 1 V (24 V). Průřez se neomezuje trvalou zatížitelností.</p>
+  <div class="f" data-id="st_u" data-label="Napětí soustavy" data-val="12" data-unit="V" data-uv="1"></div>
+  <div class="f" data-id="st_i" data-label="Startovací proud (špička)" data-val="250" data-unit="A"></div>
+  <div class="f" data-id="st_lp" data-label="Délka kladného kabelu" data-val="1,5" data-unit="m"></div>
+  <div class="f" data-id="st_ln" data-label="Délka záporného kabelu / kostry" data-val="0,5" data-unit="m"></div>
+  <div class="f" data-id="st_lim" data-label="Povolený úbytek celkem" data-val="0,5" data-unit="V" data-ks="0.5"></div>
+  <div class="f" data-id="st_t" data-label="Teplota kabelu" data-val="40" data-unit="°C"></div>
+  <div class="out" id="st_out"></div>
+  <p class="note">Typicky: benzín 1,2–2,0 l 150–250 A, diesel 250–450 A, nákladní 24 V 400–800 A. Rozhoduje údaj výrobce motoru. Baterie musí mít CCA minimálně na úrovni proudu startéru.</p>
+</article>
+
 <article class="card" data-calc="calcCmp">
   <h3>Stejný výkon při 12 / 24 / 48 V</h3>
   <p class="hint">Proč větší napětí = menší proud a tenčí kabel.</p>
@@ -272,6 +285,13 @@ footer{max-width:1280px;margin:0 auto;padding:0 16px 30px;color:var(--mut);font-
   <h3>Průřez → trvalý proud → max. pojistka</h3>
   <div class="out" id="ct_out"></div>
   <p class="note">Konzervativní hodnoty pro měděné vodiče ve svazku. Pojistka = největší typizovaná ≤ trvalý proud.</p>
+</article>
+
+<article class="card" data-calc="calcStartTable">
+  <h3>Startér: min. průřez podle proudu a délky</h3>
+  <p class="hint">12 V, úbytek 0,5 V celkem, 40 °C. Pro 24 V (1 V) poloviční průřez, vždy zaokrouhli na další standard.</p>
+  <div class="out" id="stt_out"></div>
+  <p class="note">Délka = součet kladného a záporného kabelu v metrech.</p>
 </article>
 
 <article class="card">
@@ -438,6 +458,24 @@ function calcCmp(){
     return `<tr><td>${U} V</td><td class="n">${fmt(I,1)}</td><td class="n">${rec?sz(rec):'> 95'}</td><td class="n">${nextFuse(I*1.25)||'–'}</td></tr>`;}).join('');
   setOut('c_out',`<table><tr><th>Systém</th><th class="n">I (A)</th><th class="n">Kabel mm²</th><th class="n">Pojistka A</th></tr>${rows}</table>`+
     note('Kabel = max. z požadavku na úbytek (při 50 °C, smyčka 2 × L) a na trvalý proud.'));
+}
+
+const START=[10,16,25,35,50,70,95,120,150,185];
+function calcStart(){
+  const U=nv('st_u'),I=nv('st_i'),Lp=nv('st_lp'),Ln=nv('st_ln'),lim=nv('st_lim'),th=nv('st_t');
+  if(!need(U,I,Lp,Ln,lim,th)||U<=0||I<=0||Lp<0||Ln<0||Lp+Ln<=0||lim<=0){setOut('st_out',bad('Vyplň kladné hodnoty.'));return;}
+  const r=rho(th)*(Lp+Ln), sMin=I*r/lim, S=START.find(x=>x>=sMin);
+  if(!S){setOut('st_out',row('Min. průřez',fmt(sMin,0)+' mm²','big')+note('Použij paralelní kabely nebo zkrať trasu.'));return;}
+  const dU=I*r/S;
+  setOut('st_out',row('Vypočtený min. průřez',fmt(sMin,1)+' mm²')+row('Doporučený průřez (+ i −)',S+' mm²','big')+
+    row('Úbytek při startu',fmt(dU,2)+' V ('+fmt(dU/U*100,1)+' %) '+badge(dU<=lim?'ok':'bad',dU<=lim?'OK':'překročeno'))+
+    row('Výkon při startu',fmt(I*U/1000,1)+' kW')+row('Ztráty v kabelu při startu',fmt(I*I*r/S,0)+' W')+
+    row('Zbývá napětí na startéru',fmt(U-dU,2)+' V (bez poklesu baterie)'));
+}
+function calcStartTable(){
+  const Is=[100,150,200,300,400,600],Ls=[1,1.5,2,3,4,6];
+  setOut('stt_out','<div class="scroll"><table><tr><th>A \\ m</th>'+Ls.map(l=>`<th class="n">${fmt(l,1)}</th>`).join('')+'</tr>'+
+    Is.map(i=>'<tr><td>'+i+'</td>'+Ls.map(l=>{const m=i*rho(40)*l/0.5,S=START.find(x=>x>=m);return `<td class="n">${S||'>185'}</td>`}).join('')+'</tr>').join('')+'</table></div>');
 }
 
 /* ---------- BATERIE ---------- */
@@ -634,7 +672,7 @@ $('chkGrid').addEventListener('change',e=>{
 $('chkReset').onclick=()=>{if(confirm('Vynulovat všechny checklisty?')){saveState({});buildChecks();}};
 
 /* ---------- záložky, systém a start ---------- */
-const ALL=['calcDropDC','calcFuseK','calcPowerDC','calcCmp','calcRuntime','calcSOC','calcCharge','calcSeries','calcDCDC','calcInv','calcSolar','calcBudget','calcLED','calcCabTable'];
+const ALL=['calcDropDC','calcStart','calcStartTable','calcFuseK','calcPowerDC','calcCmp','calcRuntime','calcSOC','calcCharge','calcSeries','calcDCDC','calcInv','calcSolar','calcBudget','calcLED','calcCabTable'];
 function showTab(id){
   document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('on',t.id==='t-'+id));
   document.querySelectorAll('#tabs button').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.tab===id)));
