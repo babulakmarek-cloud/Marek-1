@@ -1,6 +1,14 @@
 # Pomůcka elektrikáře
 
-Jeden offline soubor `index.html` (bez serveru a bez internetu). Otevři v prohlížeči na PC nebo v telefonu.
+Tři verze téhož obsahu:
+
+| Soubor | K čemu |
+|---|---|
+| `index.html` | interaktivní webová pomůcka, offline, na PC i v telefonu |
+| `Pomucka_elektrikare.xlsx` | Excel se živými vzorci (žlutá = vstup, modrá = výsledek), 17 listů |
+| `Tahak_elektrikare.pdf` | tisknutelný tahák A4: vzorce, tabulky a checklisty s políčky |
+
+Excel a PDF se generují skripty v `build/` (`python3 build/build_xlsx.py`, `python3 build/build_pdf.py`; PDF potřebuje Chromium). Společná data zatížitelnosti jsou v `build/data.py`.
 
 ## Obsah
 - **Elektroinstalace:** úbytek napětí a průřez, zatížitelnost a jistič (A1/B1/B2/C, PVC/XLPE, korekce), impedance smyčky a odpojení (TN), výkon ↔ proud, kompenzace účiníku, bilance příkonu rozvaděče.
