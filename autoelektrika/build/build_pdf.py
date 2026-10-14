@@ -205,7 +205,7 @@ footer{{margin-top:4mm;color:#5b6877;font-size:7.3pt}}
 <p class="note">48 V je pod mezí 60 V DC, ale zkratový proud baterie je nebezpečný. Sundej svorku −, používej izolované nářadí.</p></div>
 </div>
 
-<h2 class="pg">4. Checklisty (k vytištění)</h2>
+<h2>4. Checklisty (k vytištění)</h2>
 {checks()}
 <footer>Pomůcka je orientační a nenahrazuje údaje výrobce vozidla, baterie ani měniče ani platné předpisy. Interaktivní verze: index.html, výpočty v Excelu: Pomucka_autoelektrika.xlsx.</footer>
 </body></html>'''
