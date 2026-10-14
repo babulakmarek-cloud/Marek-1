@@ -1,0 +1,703 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Pomůcka autoelektrika 12 / 24 / 48 V</title>
+<style>
+:root{
+  --bg:#f3f5f8;--card:#fff;--ink:#16202c;--mut:#5b6877;--line:#d9e0e8;--acc:#d8590b;--acc2:#fdeee3;
+  --ok:#0f7b3f;--okbg:#e2f5ea;--bad:#b3261e;--badbg:#fde8e6;--warn:#8a5a00;--warnbg:#fff3d6;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){--bg:#0f141a;--card:#18202a;--ink:#e6ebf1;--mut:#9aa7b5;--line:#2b3644;--acc:#ff9a55;--acc2:#3a2414;
+  --ok:#5fd18b;--okbg:#12301f;--bad:#ff8a80;--badbg:#3a1815;--warn:#ffcf66;--warnbg:#38290a}
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{padding:14px 16px 6px;max-width:1280px;margin:0 auto;display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
+header h1{margin:0;font-size:1.35rem}
+header p{margin:2px 0 0;color:var(--mut);font-size:.9rem}
+.sys{display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:6px 10px}
+.sys b{font-size:.85rem;color:var(--mut)}
+.sys button{border:1px solid var(--line);background:var(--bg);color:var(--ink);padding:6px 14px;border-radius:999px;font:inherit;font-weight:700;cursor:pointer}
+.sys button[aria-pressed="true"]{background:var(--acc);border-color:var(--acc);color:#fff}
+nav{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line)}
+nav .in{display:flex;gap:6px;overflow-x:auto;padding:8px 16px;max-width:1280px;margin:0 auto}
+nav button{flex:0 0 auto;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:8px 14px;border-radius:999px;font:inherit;cursor:pointer}
+nav button[aria-selected="true"]{background:var(--acc);border-color:var(--acc);color:#fff}
+main{max-width:1280px;margin:0 auto;padding:12px 16px 40px}
+.tab{display:none}.tab.on{display:block}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,330px),1fr));gap:14px;align-items:start}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px}
+.card h3{margin:0 0 4px;font-size:1.05rem}
+.hint{color:var(--mut);font-size:.84rem;margin:2px 0 8px}
+.f{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:8px;align-items:center;margin:6px 0}
+.f label{font-size:.9rem}
+.f .c{display:flex;align-items:center;gap:6px}
+.f i{font-style:normal;color:var(--mut);font-size:.85rem;white-space:nowrap}
+input,select,button.act{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px;width:100%;min-width:0}
+input:focus,select:focus{outline:2px solid var(--acc);outline-offset:0}
+.out{margin-top:10px;border-top:1px dashed var(--line);padding-top:8px}
+.r{display:flex;justify-content:space-between;gap:10px;padding:3px 0;font-size:.95rem}
+.r b{text-align:right}
+.r.big b{font-size:1.15rem;color:var(--acc)}
+.badge{display:inline-block;padding:2px 9px;border-radius:999px;font-size:.8rem;font-weight:600}
+.badge.ok{background:var(--okbg);color:var(--ok)}
+.badge.bad{background:var(--badbg);color:var(--bad)}
+.badge.warn{background:var(--warnbg);color:var(--warn)}
+.note{font-size:.82rem;color:var(--mut);margin:6px 0 0}
+table{border-collapse:collapse;width:100%;font-size:.88rem}
+th,td{border-bottom:1px solid var(--line);padding:4px 6px;text-align:left}
+th{color:var(--mut);font-weight:600}
+td.n,th.n{text-align:right}
+tr.hl td{background:var(--acc2);font-weight:600}
+.scroll{overflow-x:auto}
+button.act{width:auto;cursor:pointer;background:var(--acc2);border-color:var(--acc);color:var(--acc);padding:6px 12px}
+.lr{display:grid;grid-template-columns:1.6fr .7fr .6fr .5fr auto;gap:4px;margin:4px 0}
+.lr input{padding:6px}
+.lr.h{font-size:.75rem;color:var(--mut)}
+.chk{display:flex;gap:8px;align-items:flex-start;padding:5px 0;border-bottom:1px solid var(--line);font-size:.93rem;cursor:pointer}
+.chk input{width:20px;height:20px;flex:0 0 auto;margin-top:2px}
+.chk.done span{color:var(--mut);text-decoration:line-through}
+.prog{font-size:.85rem;color:var(--mut)}
+.sw{display:inline-block;width:14px;height:14px;border-radius:3px;border:1px solid var(--line);vertical-align:-2px;margin-right:6px}
+footer{max-width:1280px;margin:0 auto;padding:0 16px 30px;color:var(--mut);font-size:.8rem}
+@media print{nav,.noprint,.sys{display:none}.tab{display:block!important}.card{break-inside:avoid}body{background:#fff;color:#000}}
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>🚗 Pomůcka autoelektrika</h1>
+    <p>Palubní sítě 12 / 24 / 48 V DC — kabely, pojistky, baterie, měniče, solár. Funguje offline.</p>
+  </div>
+  <div class="sys noprint" id="sysBar"><b>Systém</b>
+    <button type="button" data-v="12" aria-pressed="true">12 V</button>
+    <button type="button" data-v="24" aria-pressed="false">24 V</button>
+    <button type="button" data-v="48" aria-pressed="false">48 V</button>
+  </div>
+</header>
+<nav><div class="in" role="tablist" id="tabs">
+  <button role="tab" data-tab="cab" aria-selected="true">Kabely a jištění</button>
+  <button role="tab" data-tab="bat" aria-selected="false">Baterie</button>
+  <button role="tab" data-tab="src" aria-selected="false">Zdroje a měniče</button>
+  <button role="tab" data-tab="bil" aria-selected="false">Energetická bilance</button>
+  <button role="tab" data-tab="tab" aria-selected="false">Tabulky</button>
+  <button role="tab" data-tab="chk" aria-selected="false">Checklisty</button>
+</div></nav>
+
+<main>
+<!-- ============ KABELY A JIŠTĚNÍ ============ -->
+<section id="t-cab" class="tab on"><div class="grid">
+
+<article class="card" data-calc="calcDropDC">
+  <h3>Úbytek napětí a průřez kabelu</h3>
+  <p class="hint">ΔU = I · ρ · L · k / S. Doporučený průřez = větší z hodnot podle úbytku a podle trvalého proudu.</p>
+  <div class="f" data-id="a_u" data-label="Napětí soustavy" data-val="12" data-unit="V" data-uv="1"></div>
+  <div class="f" data-id="a_mode" data-label="Zadání" data-opts="I|Proud;P|Výkon" data-val="I"></div>
+  <div class="f" data-id="a_val" data-label="Proud (A) / výkon (W)" data-val="30"></div>
+  <div class="f" data-id="a_len" data-label="Délka kabelu (jednosměrně)" data-val="5" data-unit="m"></div>
+  <div class="f" data-id="a_ret" data-label="Zpětný vodič" data-opts="2|vlastní kabel (2 × L);1|kostra / karoserie (1 × L)" data-val="2"></div>
+  <div class="f" data-id="a_s" data-label="Průřez" data-unit="mm²" data-val="6" data-opts="0.5|0,5;0.75|0,75;1|1;1.5|1,5;2.5|2,5;4|4;6|6;10|10;16|16;25|25;35|35;50|50;70|70;95|95"></div>
+  <div class="f" data-id="a_t" data-label="Teplota vodiče" data-val="50" data-unit="°C"></div>
+  <div class="f" data-id="a_lim" data-label="Povolený úbytek" data-opts="1|1 % (citlivé obvody);2|2 %;3|3 % (běžné);5|5 % (nekritické)" data-val="3"></div>
+  <div class="out" id="a_out"></div>
+  <p class="note">Trvalé proudy v tabulce jsou konzervativní pro vodiče ve svazku. U startéru počítej špičkový proud a úbytek do 0,5 V.</p>
+</article>
+
+<article class="card" data-calc="calcFuseK">
+  <h3>Pojistka, kabel a zkratový proud</h3>
+  <p class="hint">Pojistka ≥ 1,25 × trvalý proud a zároveň ≤ proudová zatížitelnost kabelu. Pojistku dej co nejblíž ke zdroji.</p>
+  <div class="f" data-id="f_u" data-label="Napětí soustavy" data-val="12" data-unit="V" data-uv="1"></div>
+  <div class="f" data-id="f_i" data-label="Trvalý proud zátěže" data-val="30" data-unit="A"></div>
+  <div class="f" data-id="f_f" data-label="Rezerva" data-val="1,25" data-unit="×"></div>
+  <div class="f" data-id="f_l" data-label="Délka kabelu (jednosměrně)" data-val="3" data-unit="m"></div>
+  <div class="f" data-id="f_r" data-label="Vnitřní odpor baterie" data-val="5" data-unit="mΩ" data-ks="5"></div>
+  <div class="out" id="f_out"></div>
+  <p class="note">Orientační vnitřní odpor: olovo 100 Ah ≈ 5 mΩ na 12 V, LiFePO₄ 100 Ah ≈ 10–20 mΩ na 12 V (údaj výrobce má přednost).</p>
+</article>
+
+<article class="card" data-calc="calcPowerDC">
+  <h3>Výkon ↔ proud ↔ odpor</h3>
+  <div class="f" data-id="p_u" data-label="Napětí" data-val="12" data-unit="V" data-uv="1"></div>
+  <div class="f" data-id="p_mode" data-label="Zadávám" data-opts="P|Výkon (W);I|Proud (A)" data-val="P"></div>
+  <div class="f" data-id="p_val" data-label="Hodnota" data-val="600"></div>
+  <div class="f" data-id="p_eff" data-label="Účinnost zařízení" data-val="100" data-unit="%"></div>
+  <div class="out" id="p_out"></div>
+</article>
+
+<article class="card" data-calc="calcStart">
+  <h3>Startér — kabel a úbytek</h3>
+  <p class="hint">Krátkodobý špičkový proud při startu. Celkový úbytek na + i − kabelu max. 0,5 V (12 V), 1 V (24 V). Průřez se neomezuje trvalou zatížitelností.</p>
+  <div class="f" data-id="st_u" data-label="Napětí soustavy" data-val="12" data-unit="V" data-uv="1"></div>
+  <div class="f" data-id="st_i" data-label="Startovací proud (špička)" data-val="250" data-unit="A"></div>
+  <div class="f" data-id="st_lp" data-label="Délka kladného kabelu" data-val="1,5" data-unit="m"></div>
+  <div class="f" data-id="st_ln" data-label="Délka záporného kabelu / kostry" data-val="0,5" data-unit="m"></div>
+  <div class="f" data-id="st_lim" data-label="Povolený úbytek celkem" data-val="0,5" data-unit="V" data-ks="0.5"></div>
+  <div class="f" data-id="st_t" data-label="Teplota kabelu" data-val="40" data-unit="°C"></div>
+  <div class="out" id="st_out"></div>
+  <p class="note">Typicky: benzín 1,2–2,0 l 150–250 A, diesel 250–450 A, nákladní 24 V 400–800 A. Rozhoduje údaj výrobce motoru. Baterie musí mít CCA minimálně na úrovni proudu startéru.</p>
+</article>
+
+<article class="card" data-calc="calcCmp">
+  <h3>Stejný výkon při 12 / 24 / 48 V</h3>
+  <p class="hint">Proč větší napětí = menší proud a tenčí kabel.</p>
+  <div class="f" data-id="c_p" data-label="Výkon zátěže" data-val="2000" data-unit="W"></div>
+  <div class="f" data-id="c_l" data-label="Délka kabelu (jednosměrně)" data-val="5" data-unit="m"></div>
+  <div class="f" data-id="c_lim" data-label="Povolený úbytek" data-val="3" data-unit="%"></div>
+  <div class="out" id="c_out"></div>
+</article>
+
+</div></section>
+
+<!-- ============ BATERIE ============ -->
+<section id="t-bat" class="tab"><div class="grid">
+
+<article class="card" data-calc="calcRuntime">
+  <h3>Výdrž a kapacita baterie</h3>
+  <div class="f" data-id="b_u" data-label="Napětí baterie" data-val="12" data-unit="V" data-uv="1"></div>
+  <div class="f" data-id="b_ah" data-label="Kapacita" data-val="100" data-unit="Ah"></div>
+  <div class="f" data-id="b_chem" data-label="Typ baterie" data-opts="50|Olovo (AGM / gel / zaplavená);80|LiFePO₄;90|LiFePO₄ (výrobce povoluje 90 %)" data-val="50"></div>
+  <div class="f" data-id="b_dod" data-label="Využitelná hloubka vybití" data-val="50" data-unit="%"></div>
+  <div class="f" data-id="b_load" data-label="Zátěž" data-val="200" data-unit="W"></div>
+  <div class="f" data-id="b_eff" data-label="Účinnost (měnič, ztráty)" data-val="90" data-unit="%"></div>
+  <div class="f" data-id="b_h" data-label="Požadovaná výdrž" data-val="10" data-unit="h"></div>
+  <div class="out" id="b_out"></div>
+  <p class="note">Peukertův efekt (u olova vyšší odběr = menší využitelná kapacita) není započítán. U velkých proudů počítej s rezervou.</p>
+</article>
+
+<article class="card" data-calc="calcSOC">
+  <h3>Stav nabití olověné baterie z napětí</h3>
+  <p class="hint">Platí pro olovo v klidu (min. 4 h po zátěži/nabíjení). Pro LiFePO₄ nepoužívej (plochá křivka), čti BMS nebo shunt.</p>
+  <div class="f" data-id="s_u" data-label="Napětí soustavy" data-val="12" data-unit="V" data-uv="1"></div>
+  <div class="f" data-id="s_v" data-label="Naměřené napětí v klidu" data-val="12,3" data-unit="V" data-ks="12.3"></div>
+  <div class="out" id="s_out"></div>
+</article>
+
+<article class="card" data-calc="calcCharge">
+  <h3>Doba nabíjení</h3>
+  <div class="f" data-id="ch_u" data-label="Napětí baterie" data-val="12" data-unit="V" data-uv="1"></div>
+  <div class="f" data-id="ch_ah" data-label="Kapacita" data-val="100" data-unit="Ah"></div>
+  <div class="f" data-id="ch_from" data-label="Stav nabití z" data-val="50" data-unit="%"></div>
+  <div class="f" data-id="ch_to" data-label="Stav nabití na" data-val="100" data-unit="%"></div>
+  <div class="f" data-id="ch_i" data-label="Nabíjecí proud" data-val="20" data-unit="A"></div>
+  <div class="f" data-id="ch_eff" data-label="Účinnost nabíjení" data-val="85" data-unit="%"></div>
+  <div class="f" data-id="ch_vc" data-label="Nabíjecí napětí" data-val="14,4" data-unit="V" data-ks="14.4"></div>
+  <div class="out" id="ch_out"></div>
+  <p class="note">Olovo: poslední ≈ 20 % (absorpce) trvá o hodiny déle. LiFePO₄ přijímá plný proud téměř do konce, účinnost ≈ 95 %.</p>
+</article>
+
+<article class="card" data-calc="calcSeries">
+  <h3>Sestavení baterie (sériově / paralelně)</h3>
+  <div class="f" data-id="sp_u" data-label="Cílové napětí soustavy" data-val="12" data-unit="V" data-uv="1"></div>
+  <div class="f" data-id="sp_cell" data-label="Typ článku / bloku" data-val="12" data-opts="2|Olovo 2 V článek;6|Olovo 6 V blok;12|Olovo 12 V blok;3.2|LiFePO₄ 3,2 V článek;3.7|Li-ion NMC 3,6–3,7 V článek"></div>
+  <div class="f" data-id="sp_ah" data-label="Kapacita jednoho článku / bloku" data-val="100" data-unit="Ah"></div>
+  <div class="f" data-id="sp_p" data-label="Paralelních větví" data-val="2"></div>
+  <div class="out" id="sp_out"></div>
+  <p class="note">Paralelně spojuj jen stejné baterie (typ, stáří, kapacita), vždy se samostatnou pojistkou na větev u větších systémů. LiFePO₄/Li-ion jen s BMS.</p>
+</article>
+
+</div></section>
+
+<!-- ============ ZDROJE A MĚNIČE ============ -->
+<section id="t-src" class="tab"><div class="grid">
+
+<article class="card" data-calc="calcDCDC">
+  <h3>DC-DC měnič / nabíječ (např. 12 → 24 / 48 V)</h3>
+  <div class="f" data-id="dd_vin" data-label="Vstupní napětí (alternátor / baterie)" data-val="12" data-unit="V"></div>
+  <div class="f" data-id="dd_vout" data-label="Výstupní napětí" data-val="24" data-unit="V"></div>
+  <div class="f" data-id="dd_iout" data-label="Výstupní proud" data-val="20" data-unit="A"></div>
+  <div class="f" data-id="dd_eff" data-label="Účinnost" data-val="92" data-unit="%"></div>
+  <div class="out" id="dd_out"></div>
+  <p class="note">Při zvyšování napětí je vstupní proud mnohem vyšší než výstupní. Dimenzuj vstupní kabel a pojistku na vstupní proud.</p>
+</article>
+
+<article class="card" data-calc="calcInv">
+  <h3>Střídač 12/24/48 V → 230 V</h3>
+  <div class="f" data-id="i_u" data-label="Napětí baterie" data-val="12" data-unit="V" data-uv="1"></div>
+  <div class="f" data-id="i_p" data-label="Trvalý výkon AC" data-val="1500" data-unit="W"></div>
+  <div class="f" data-id="i_pk" data-label="Špičkový výkon (rozběh motorů)" data-val="3000" data-unit="W"></div>
+  <div class="f" data-id="i_eff" data-label="Účinnost střídače" data-val="90" data-unit="%"></div>
+  <div class="f" data-id="i_l" data-label="Délka DC kabelu (jednosměrně)" data-val="1,5" data-unit="m"></div>
+  <div class="f" data-id="i_lim" data-label="Povolený úbytek" data-val="2" data-unit="%"></div>
+  <div class="out" id="i_out"></div>
+  <p class="note">Rozhodují údaje výrobce střídače. DC pojistku dej co nejblíž ke svorce baterie, použij kabely stejné délky pro + i −.</p>
+</article>
+
+<article class="card" data-calc="calcSolar">
+  <h3>Solár — MPPT regulátor a výnos</h3>
+  <div class="f" data-id="sl_u" data-label="Napětí baterie" data-val="12" data-unit="V" data-uv="1"></div>
+  <div class="f" data-id="sl_wp" data-label="Výkon panelů" data-val="400" data-unit="Wp"></div>
+  <div class="f" data-id="sl_t" data-label="Typ regulátoru" data-opts="0.95|MPPT (η 95 %);0.78|PWM (η ≈ 78 %)" data-val="0.95"></div>
+  <div class="f" data-id="sl_vc" data-label="Nabíjecí napětí" data-val="14,4" data-unit="V" data-ks="14.4"></div>
+  <div class="f" data-id="sl_sun" data-label="Plné sluneční hodiny / den" data-val="3,5" data-unit="h"></div>
+  <div class="f" data-id="sl_voc" data-label="Voc panelu" data-val="22,5" data-unit="V"></div>
+  <div class="f" data-id="sl_n" data-label="Panelů v sérii" data-val="2"></div>
+  <div class="f" data-id="sl_tkv" data-label="TK Voc" data-val="-0,27" data-unit="%/°C"></div>
+  <div class="f" data-id="sl_tmin" data-label="Min. teplota" data-val="-15" data-unit="°C"></div>
+  <div class="f" data-id="sl_vpv" data-label="Max. PV napětí regulátoru" data-val="100" data-unit="V"></div>
+  <div class="out" id="sl_out"></div>
+  <p class="note">Denní výnos (ČR/SK): léto ≈ 4–5 h, jaro/podzim ≈ 2–3 h, zima ≈ 0,5–1 h. Zahrnuta rezerva 25 % ztrát (teplota, kabely, stín).</p>
+</article>
+
+</div></section>
+
+<!-- ============ ENERGETICKÁ BILANCE ============ -->
+<section id="t-bil" class="tab"><div class="grid">
+<article class="card" data-calc="calcBudget">
+  <h3>Denní spotřeba a dimenzování (karavan, loď, dodávka)</h3>
+  <p class="hint">Spotřebič × počet × hodiny provozu za den (u cyklických, např. chladničky, zadej průměrnou dobu chodu).</p>
+  <div class="lr h"><span>Spotřebič</span><span>W</span><span>h/den</span><span>ks</span><span></span></div>
+  <div id="g_rows"></div>
+  <button class="act noprint" type="button" id="g_add">+ přidat řádek</button>
+  <div class="f" data-id="g_u" data-label="Napětí soustavy" data-val="12" data-unit="V" data-uv="1"></div>
+  <div class="f" data-id="g_days" data-label="Dní autonomie" data-val="2"></div>
+  <div class="f" data-id="g_dod" data-label="Využitelná hloubka vybití" data-val="50" data-unit="%"></div>
+  <div class="f" data-id="g_eff" data-label="Účinnost (měnič, ztráty)" data-val="90" data-unit="%"></div>
+  <div class="f" data-id="g_sun" data-label="Plné sluneční hodiny / den" data-val="3,5" data-unit="h"></div>
+  <div class="out" id="g_out"></div>
+  <p class="note">DoD 50 % pro olovo, 80–90 % pro LiFePO₄.</p>
+</article>
+
+<article class="card" data-calc="calcLED">
+  <h3>LED a předřadný rezistor</h3>
+  <div class="f" data-id="l_vs" data-label="Napětí zdroje (max., při nabíjení)" data-val="14,4" data-unit="V" data-ks="14.4"></div>
+  <div class="f" data-id="l_vf" data-label="Úbytek na 1 LED (Vf)" data-val="2,0" data-unit="V"></div>
+  <div class="f" data-id="l_n" data-label="LED v sérii" data-val="3" data-ks="3"></div>
+  <div class="f" data-id="l_if" data-label="Proud LED" data-val="20" data-unit="mA"></div>
+  <div class="out" id="l_out"></div>
+  <p class="note">U 24 V a 48 V zapoj více LED do série nebo použij proudový zdroj. Pro výkonové LED použij konstantní proud, ne rezistor.</p>
+</article>
+</div></section>
+
+<!-- ============ TABULKY ============ -->
+<section id="t-tab" class="tab"><div class="grid">
+
+<article class="card">
+  <h3>Typická napětí podle soustavy</h3>
+  <div class="scroll" id="tbl_volt"></div>
+  <p class="note">Orientační hodnoty. Nabíjecí a odpojovací napětí vždy řiďte údaji výrobce baterie a BMS.</p>
+</article>
+
+<article class="card" data-calc="calcCabTable">
+  <h3>Průřez → trvalý proud → max. pojistka</h3>
+  <div class="out" id="ct_out"></div>
+  <p class="note">Konzervativní hodnoty pro měděné vodiče ve svazku. Pojistka = největší typizovaná ≤ trvalý proud.</p>
+</article>
+
+<article class="card" data-calc="calcStartTable">
+  <h3>Startér: min. průřez podle proudu a délky</h3>
+  <p class="hint">12 V, úbytek 0,5 V celkem, 40 °C. Pro 24 V (1 V) poloviční průřez, vždy zaokrouhli na další standard.</p>
+  <div class="out" id="stt_out"></div>
+  <p class="note">Délka = součet kladného a záporného kabelu v metrech.</p>
+</article>
+
+<article class="card">
+  <h3>Barvy plochých autopojistek (ISO 8820)</h3>
+  <div id="tbl_fuse"></div>
+  <p class="note">Standardní plochá pojistka je dimenzovaná na 32 V DC. Pro 48 V použij typy s jmenovitým DC napětím ≥ 58 V (MRBF, MIDI/MEGA 58 V, Class T apod.). Ověř údaj výrobce.</p>
+</article>
+
+<article class="card">
+  <h3>Značení svorek (DIN 72552)</h3>
+  <table>
+    <tr><td>30</td><td>trvalé + z baterie</td></tr>
+    <tr><td>31</td><td>kostra (−)</td></tr>
+    <tr><td>15</td><td>+ po zapnutí zapalování</td></tr>
+    <tr><td>50</td><td>startér</td></tr>
+    <tr><td>56 / 58</td><td>hlavní světla / obrysová</td></tr>
+    <tr><td>49 / 49a</td><td>vstup / výstup směrovek</td></tr>
+    <tr><td>61</td><td>kontrolka nabíjení</td></tr>
+  </table>
+  <h3 style="margin-top:10px">Relé (5pin)</h3>
+  <table>
+    <tr><td>85 / 86</td><td>cívka</td></tr>
+    <tr><td>30</td><td>společný kontakt</td></tr>
+    <tr><td>87</td><td>spínací kontakt (NO)</td></tr>
+    <tr><td>87a</td><td>rozpínací kontakt (NC)</td></tr>
+  </table>
+</article>
+
+<article class="card">
+  <h3>Orientační příkony spotřebičů</h3>
+  <table>
+    <tr><th>Spotřebič</th><th class="n">W</th></tr>
+    <tr><td>Halogenová žárovka H4/H7</td><td class="n">55–60</td></tr>
+    <tr><td>LED hlavní světlo</td><td class="n">20–40</td></tr>
+    <tr><td>Brzdové světlo</td><td class="n">21</td></tr>
+    <tr><td>Obrysová žárovka</td><td class="n">5</td></tr>
+    <tr><td>Stěrače</td><td class="n">60–90</td></tr>
+    <tr><td>Ventilátor topení / klimatizace</td><td class="n">100–250</td></tr>
+    <tr><td>Kompresorová chladnička (při chodu)</td><td class="n">40–60</td></tr>
+    <tr><td>Vodní čerpadlo</td><td class="n">30–80</td></tr>
+    <tr><td>LED pásek 5050, 60 LED/m</td><td class="n">14 W/m</td></tr>
+    <tr><td>Zásuvka / USB nabíječka</td><td class="n">15–60</td></tr>
+    <tr><td>Startér (špička)</td><td class="n">1–3 kW (80–250 A)</td></tr>
+  </table>
+</article>
+
+<article class="card">
+  <h3>12 V vs. 24 V vs. 48 V</h3>
+  <table>
+    <tr><th></th><th>12 V</th><th>24 V</th><th>48 V</th></tr>
+    <tr><td>Proud při 1 kW</td><td class="n">83 A</td><td class="n">42 A</td><td class="n">21 A</td></tr>
+    <tr><td>Ztráty v kabelu (stejný průřez)</td><td class="n">1×</td><td class="n">¼</td><td class="n">1⁄16</td></tr>
+    <tr><td>Typické použití</td><td>osobní auta, karavany</td><td>nákladní, autobusy, lodě</td><td>mild-hybrid, e-kola, ostrovní sítě</td></tr>
+  </table>
+  <p class="note">48 V je pod mezí 60 V DC, ale zkratový proud baterie je stále nebezpečný (stovky až tisíce A). Při práci sundej svorku −, použij izolované nářadí.</p>
+</article>
+
+<article class="card">
+  <h3>AWG → mm²</h3>
+  <div id="awg_out" class="scroll"></div>
+</article>
+
+</div></section>
+
+<!-- ============ CHECKLISTY ============ -->
+<section id="t-chk" class="tab"><div class="grid" id="chkGrid"></div>
+<p class="noprint"><button class="act" type="button" id="chkReset">Vynulovat všechny checklisty</button></p>
+</section>
+</main>
+
+<footer>
+  Pomůcka je orientační a nenahrazuje údaje výrobce vozidla, baterie, měniče ani platné předpisy (u lodí, karavanů a úprav vozidel též schvalování). Výpočty vždy ověř. Stav checklistů se ukládá jen v tomto prohlížeči.
+</footer>
+
+<script>
+'use strict';
+/* ---------- pomocné funkce ---------- */
+const $=id=>document.getElementById(id);
+const nv=id=>parseFloat(String($(id).value).replace(',','.').replace(/\s/g,''));
+const fmt=(x,d=2)=>Number.isFinite(x)?x.toLocaleString('cs-CZ',{maximumFractionDigits:d}):'–';
+const rd=(x,d)=>Math.round(x*10**d)/10**d;
+const need=(...a)=>a.every(Number.isFinite);
+const setOut=(id,h)=>{$(id).innerHTML=h;};
+const row=(k,v,c)=>`<div class="r${c?' '+c:''}"><span>${k}</span><b>${v}</b></div>`;
+const badge=(t,txt)=>`<span class="badge ${t}">${txt}</span>`;
+const bad=txt=>`<p class="hint">${txt}</p>`;
+const note=t=>`<p class="note">${t}</p>`;
+
+/* [průřez mm², konzervativní trvalý proud A] */
+const CAB=[[0.5,5],[0.75,8],[1,10],[1.5,14],[2.5,20],[4,28],[6,36],[10,50],[16,70],[25,95],[35,120],[50,150],[70,190],[95,230]];
+const SIZES=CAB.map(c=>c[0]);
+const FUSES=[1,2,3,4,5,7.5,10,15,20,25,30,35,40,50,60,70,80,100,125,150,175,200,250,300,350,400,500];
+const nextFuse=x=>FUSES.find(v=>v>=x);
+const ampOf=s=>(CAB.find(c=>c[0]===s)||[0,0])[1];
+const sizeForAmp=i=>(CAB.find(c=>c[1]>=i)||[])[0];
+const rho=t=>(1/56)*(1+0.00393*(t-20));
+const sz=s=>fmt(s,2);
+
+/* ---------- vytvoření polí ---------- */
+document.querySelectorAll('.f').forEach(e=>{
+  const d=e.dataset; let ctl;
+  if(d.opts){
+    ctl=`<select id="${d.id}">`+d.opts.split(';').map(o=>{const i=o.indexOf('|');const v=o.slice(0,i),t=o.slice(i+1);
+      return `<option value="${v}"${v===d.val?' selected':''}>${t}</option>`;}).join('')+`</select>`;
+  } else ctl=`<input id="${d.id}" type="text" inputmode="decimal" autocomplete="off" value="${d.val??''}"${d.uv?' data-uv="1"':''}${d.ks?` data-ks="${d.ks}"`:''}>`;
+  e.innerHTML=`<label for="${d.id}">${d.label}</label><div class="c">${ctl}${d.unit?`<i id="${d.id}_u">${d.unit}</i>`:''}</div>`;
+});
+
+/* ---------- KABELY A JIŠTĚNÍ ---------- */
+function calcDropDC(){
+  const U=nv('a_u'),val=nv('a_val'),L=nv('a_len'),th=nv('a_t'),lim=parseFloat($('a_lim').value);
+  const mode=$('a_mode').value,k=parseFloat($('a_ret').value),S=parseFloat($('a_s').value);
+  if(!need(U,val,L,th)||U<=0||val<=0||L<=0){setOut('a_out',bad('Vyplň kladné hodnoty.'));return;}
+  const I=mode==='I'?val:val/U, r=rho(th)*L*k;
+  const dU=s=>I*r/s, pct=s=>dU(s)/U*100;
+  const okD=pct(S)<=lim, okA=I<=ampOf(S);
+  const sD=SIZES.find(s=>pct(s)<=lim), sA=sizeForAmp(I);
+  const rec=(sD&&sA)?Math.max(sD,sA):undefined;
+  let h=row('Proud',fmt(I)+' A')+
+    row('Úbytek napětí',fmt(dU(S),2)+' V (zbývá '+fmt(U-dU(S),2)+' V)')+
+    row('Úbytek v %',fmt(pct(S))+' % '+badge(okD?'ok':'bad',okD?'vyhovuje':'překročeno'),'big')+
+    row('Trvalý proud kabelu '+sz(S)+' mm²',fmt(ampOf(S),0)+' A '+badge(okA?'ok':'bad',okA?'vyhovuje':'přetíženo'))+
+    row('Min. průřez podle úbytku',sD?sz(sD)+' mm²':'> 95 mm²')+
+    row('Min. průřez podle proudu',sA?sz(sA)+' mm²':'> 95 mm²')+
+    row('Doporučený průřez',rec?sz(rec)+' mm²':'mimo tabulku (paralelní kabely)','big')+
+    row('Ztráty v kabelu',fmt(I*I*r/S,1)+' W');
+  h+=`<div class="scroll"><table><tr><th>mm²</th><th class="n">ΔU %</th><th class="n">I max (A)</th><th></th></tr>`+
+    CAB.map(c=>{const ok=pct(c[0])<=lim&&I<=c[1];return `<tr${c[0]===S?' class="hl"':''}><td>${sz(c[0])}</td><td class="n">${fmt(pct(c[0]))}</td><td class="n">${c[1]}</td><td>${ok?'✔':'✘'}</td></tr>`}).join('')+`</table></div>`;
+  setOut('a_out',h);
+}
+
+function calcFuseK(){
+  const U=nv('f_u'),I=nv('f_i'),f=nv('f_f'),L=nv('f_l'),R=nv('f_r');
+  if(!need(U,I,f,L,R)||U<=0||I<=0||f<1||L<=0||R<0){setOut('f_out',bad('Vyplň platné hodnoty (rezerva ≥ 1).'));return;}
+  const If=nextFuse(I*f), cab=If?CAB.find(c=>c[1]>=If):null;
+  let h=row('Min. pojistka (I × rezerva)',fmt(I*f,1)+' A');
+  if(!If){setOut('f_out',h+row('Pojistka','> 500 A, použij jistič / Class T')+note('Tento proud je mimo rozsah tabulky.'));return;}
+  h+=row('Doporučená pojistka',fmt(If,1)+' A','big');
+  if(!cab){setOut('f_out',h+row('Kabel','mimo tabulku (> 95 mm², paralelní kabely)'));return;}
+  const Rc=rho(20)*L*2/cab[0], Isc=U/(R/1000+Rc);
+  h+=row('Kabel pod pojistkou',sz(cab[0])+' mm² (trvalý proud '+cab[1]+' A)','big');
+  h+=row('Typ pojistky',If<=40?'plochá (ATO / ISO 8820)':If<=200?'MIDI / MEGA / ANL':'MEGA / ANL / Class T');
+  h+=row('Napětí pojistky',U<=24?'min. 32 V DC '+badge('ok','standardní'):'min. 58 V DC '+badge('warn','speciální'));
+  h+=row('Odhad zkratového proudu',fmt(Isc,0)+' A');
+  h+=row('Pojistka vs. zkrat',badge(Isc>=5*If?'ok':'warn',Isc>=5*If?'rychlé vypnutí':'zkrat vypne pomalu'));
+  h+=note('Při Isc > 1000 A použij pojistku s dostatečnou vypínací schopností (MEGA, ANL, Class T).');
+  setOut('f_out',h);
+}
+
+function calcPowerDC(){
+  const U=nv('p_u'),v=nv('p_val'),eff=nv('p_eff')/100,mode=$('p_mode').value;
+  if(!need(U,v,eff)||U<=0||v<=0||eff<=0){setOut('p_out',bad('Vyplň kladné hodnoty.'));return;}
+  const P=mode==='P'?v:v*U, I=mode==='I'?v:v/U, Iin=P/(U*eff);
+  setOut('p_out',row('Proud z baterie',fmt(Iin)+' A','big')+row('Výkon',fmt(P,1)+' W')+
+    row('Odpor zátěže R = U²/P',fmt(U*U/P,3)+' Ω')+row('Energie za 1 hodinu',fmt(P/eff/1000,3)+' kWh')+
+    row('Ah za hodinu',fmt(Iin)+' Ah'));
+}
+
+function calcCmp(){
+  const P=nv('c_p'),L=nv('c_l'),lim=nv('c_lim');
+  if(!need(P,L,lim)||P<=0||L<=0||lim<=0){setOut('c_out',bad('Vyplň kladné hodnoty.'));return;}
+  const rows=[12,24,48].map(U=>{
+    const I=P/U,sD=SIZES.find(s=>I*rho(50)*L*2/s/U*100<=lim),sA=sizeForAmp(I),rec=(sD&&sA)?Math.max(sD,sA):null;
+    return `<tr><td>${U} V</td><td class="n">${fmt(I,1)}</td><td class="n">${rec?sz(rec):'> 95'}</td><td class="n">${nextFuse(I*1.25)||'–'}</td></tr>`;}).join('');
+  setOut('c_out',`<table><tr><th>Systém</th><th class="n">I (A)</th><th class="n">Kabel mm²</th><th class="n">Pojistka A</th></tr>${rows}</table>`+
+    note('Kabel = max. z požadavku na úbytek (při 50 °C, smyčka 2 × L) a na trvalý proud.'));
+}
+
+const START=[10,16,25,35,50,70,95,120,150,185];
+function calcStart(){
+  const U=nv('st_u'),I=nv('st_i'),Lp=nv('st_lp'),Ln=nv('st_ln'),lim=nv('st_lim'),th=nv('st_t');
+  if(!need(U,I,Lp,Ln,lim,th)||U<=0||I<=0||Lp<0||Ln<0||Lp+Ln<=0||lim<=0){setOut('st_out',bad('Vyplň kladné hodnoty.'));return;}
+  const r=rho(th)*(Lp+Ln), sMin=I*r/lim, S=START.find(x=>x>=sMin);
+  if(!S){setOut('st_out',row('Min. průřez',fmt(sMin,0)+' mm²','big')+note('Použij paralelní kabely nebo zkrať trasu.'));return;}
+  const dU=I*r/S;
+  setOut('st_out',row('Vypočtený min. průřez',fmt(sMin,1)+' mm²')+row('Doporučený průřez (+ i −)',S+' mm²','big')+
+    row('Úbytek při startu',fmt(dU,2)+' V ('+fmt(dU/U*100,1)+' %) '+badge(dU<=lim?'ok':'bad',dU<=lim?'OK':'překročeno'))+
+    row('Výkon při startu',fmt(I*U/1000,1)+' kW')+row('Ztráty v kabelu při startu',fmt(I*I*r/S,0)+' W')+
+    row('Zbývá napětí na startéru',fmt(U-dU,2)+' V (bez poklesu baterie)'));
+}
+function calcStartTable(){
+  const Is=[100,150,200,300,400,600],Ls=[1,1.5,2,3,4,6];
+  setOut('stt_out','<div class="scroll"><table><tr><th>A \\ m</th>'+Ls.map(l=>`<th class="n">${fmt(l,1)}</th>`).join('')+'</tr>'+
+    Is.map(i=>'<tr><td>'+i+'</td>'+Ls.map(l=>{const m=i*rho(40)*l/0.5,S=START.find(x=>x>=m);return `<td class="n">${S||'>185'}</td>`}).join('')+'</tr>').join('')+'</table></div>');
+}
+
+/* ---------- BATERIE ---------- */
+function calcRuntime(e){
+  if(e&&e.target&&e.target.id==='b_chem')$('b_dod').value=$('b_chem').value;
+  const U=nv('b_u'),Ah=nv('b_ah'),dod=nv('b_dod')/100,P=nv('b_load'),eff=nv('b_eff')/100,h=nv('b_h');
+  if(!need(U,Ah,dod,P,eff,h)||U<=0||Ah<=0||dod<=0||P<=0||eff<=0){setOut('b_out',bad('Vyplň kladné hodnoty.'));return;}
+  const Wh=U*Ah,use=Wh*dod, run=use*eff/P, I=P/(U*eff), need_=P*h/(U*dod*eff);
+  setOut('b_out',row('Energie baterie',fmt(Wh,0)+' Wh ('+fmt(Wh/1000,2)+' kWh)')+row('Využitelná energie',fmt(use,0)+' Wh')+
+    row('Proud z baterie',fmt(I,1)+' A ('+fmt(I/Ah,2)+' C)')+row('Výdrž',fmt(run,1)+' h','big')+
+    row('Potřebná kapacita pro '+fmt(h,1)+' h',fmt(need_,0)+' Ah','big'));
+}
+
+const SOC12=[[11.8,0],[12.0,25],[12.2,50],[12.5,75],[12.7,100]];
+function calcSOC(){
+  const U=nv('s_u'),V=nv('s_v');
+  if(!need(U,V)||U<=0||V<=0){setOut('s_out',bad('Vyplň napětí.'));return;}
+  const k=U/12,v=V/k;let soc;
+  if(v<=SOC12[0][0])soc=0;else if(v>=SOC12[4][0])soc=100;
+  else for(let i=0;i<4;i++){const a=SOC12[i],b=SOC12[i+1];if(v>=a[0]&&v<=b[0]){soc=a[1]+(v-a[0])/(b[0]-a[0])*(b[1]-a[1]);break;}}
+  const st=soc>=75?'ok':soc>=50?'warn':'bad';
+  setOut('s_out',row('Stav nabití (odhad)',fmt(soc,0)+' % '+badge(st,soc>=75?'v pořádku':soc>=50?'dobít':'nutno dobít'),'big')+
+    row('Plně nabitá v klidu',fmt(12.7*k,1)+' V')+row('50 %',fmt(12.2*k,1)+' V')+row('Doporučené odpojení zátěže',fmt(10.5*k,1)+' V')+
+    note('Napětí při zátěži nebo těsně po nabíjení je zkreslené. Měř po min. 4 h klidu.'));
+}
+
+function calcCharge(){
+  const U=nv('ch_u'),Ah=nv('ch_ah'),a=nv('ch_from'),b=nv('ch_to'),I=nv('ch_i'),eff=nv('ch_eff')/100,Vc=nv('ch_vc');
+  if(!need(U,Ah,a,b,I,eff,Vc)||Ah<=0||I<=0||eff<=0||b<=a){setOut('ch_out',bad('Zadej cílový stav větší než výchozí a kladné hodnoty.'));return;}
+  const dAh=Ah*(b-a)/100, t=dAh/(eff*I);
+  setOut('ch_out',row('Dodat do baterie',fmt(dAh,1)+' Ah ('+fmt(dAh*U/1000,2)+' kWh)')+row('Doba nabíjení (orientačně)',fmt(t,1)+' h','big')+
+    row('Příkon nabíječe',fmt(I*Vc,0)+' W')+row('Proud / kapacita',fmt(I/Ah,2)+' C '+badge(I/Ah<=0.3?'ok':'warn',I/Ah<=0.3?'běžné':'ověř limit výrobce')));
+}
+
+function calcSeries(){
+  const U=nv('sp_u'),c=parseFloat($('sp_cell').value),Ah=nv('sp_ah'),p=nv('sp_p');
+  if(!need(U,Ah,p)||U<=0||Ah<=0||p<=0){setOut('sp_out',bad('Vyplň kladné hodnoty.'));return;}
+  const nS=Math.round(U/c), Vnom=nS*c, ok=Math.abs(Vnom-U)/U<0.1;
+  setOut('sp_out',row('Počet v sérii',nS+' ks (S)','big')+row('Napětí sestavy',fmt(Vnom,1)+' V '+badge(ok?'ok':'warn',ok?'odpovídá':'nesedí na soustavu'))+
+    row('Celková kapacita',fmt(Ah*p,0)+' Ah')+row('Celkem článků / bloků',(nS*p)+' ks')+row('Energie',fmt(Vnom*Ah*p/1000,2)+' kWh'));
+}
+
+/* ---------- ZDROJE A MĚNIČE ---------- */
+function calcDCDC(){
+  const Vi=nv('dd_vin'),Vo=nv('dd_vout'),Io=nv('dd_iout'),eff=nv('dd_eff')/100;
+  if(!need(Vi,Vo,Io,eff)||Vi<=0||Vo<=0||Io<=0||eff<=0){setOut('dd_out',bad('Vyplň kladné hodnoty.'));return;}
+  const Po=Vo*Io, Ii=Po/(Vi*eff), If=nextFuse(Ii*1.25), s=If?CAB.find(c=>c[1]>=If):null;
+  setOut('dd_out',row('Výstupní výkon',fmt(Po,0)+' W')+row('Vstupní proud',fmt(Ii,1)+' A','big')+row('Ztráty měniče',fmt(Po/eff-Po,0)+' W')+
+    row('Vstupní pojistka (≥ 1,25 × I)',If?fmt(If,1)+' A':'> 500 A')+row('Vstupní kabel (podle proudu)',s?sz(s[0])+' mm²':'mimo tabulku'));
+}
+
+function calcInv(){
+  const U=nv('i_u'),P=nv('i_p'),Pk=nv('i_pk'),eff=nv('i_eff')/100,L=nv('i_l'),lim=nv('i_lim');
+  if(!need(U,P,Pk,eff,L,lim)||U<=0||P<=0||eff<=0||L<=0||lim<=0){setOut('i_out',bad('Vyplň kladné hodnoty.'));return;}
+  const I=P/(U*eff), Ip=Pk/(U*eff), If=nextFuse(1.25*I);
+  const sD=SIZES.find(s=>I*rho(50)*L*2/s/U*100<=lim), sA=If?(CAB.find(c=>c[1]>=If)||[])[0]:undefined, rec=(sD&&sA)?Math.max(sD,sA):undefined;
+  setOut('i_out',row('Trvalý DC proud',fmt(I,1)+' A','big')+row('Špičkový DC proud',fmt(Ip,0)+' A')+
+    row('DC pojistka (≥ 1,25 × I)',If?fmt(If,1)+' A':'> 500 A')+row('DC kabel (úbytek '+fmt(lim,1)+' % a pojistka)',rec?sz(rec)+' mm²':'mimo tabulku','big')+
+    row('Min. kapacita baterie – LiFePO₄ (1 C)',fmt(I,0)+' Ah')+row('Min. kapacita baterie – olovo (0,2 C)',fmt(I/0.2,0)+' Ah')+
+    row('Střídač zatíží baterii příkonem',fmt(P/eff,0)+' W'));
+}
+
+function calcSolar(){
+  const U=nv('sl_u'),Wp=nv('sl_wp'),eta=parseFloat($('sl_t').value),Vc=nv('sl_vc'),sun=nv('sl_sun'),Voc=nv('sl_voc'),n=nv('sl_n'),tk=nv('sl_tkv'),tm=nv('sl_tmin'),Vpv=nv('sl_vpv');
+  if(!need(U,Wp,eta,Vc,sun,Voc,n,tk,tm,Vpv)||U<=0||Wp<=0||Vc<=0){setOut('sl_out',bad('Vyplň platné hodnoty.'));return;}
+  const I=Wp*eta/Vc, REG=[10,15,20,30,40,50,60,70,80,100,120], reg=REG.find(x=>x>=I*1.25);
+  const Wh=Wp*sun*0.75, VocC=Voc*(1+tk/100*(tm-25))*n, okV=VocC<=Vpv;
+  setOut('sl_out',row('Nabíjecí proud při špičce',fmt(I,1)+' A','big')+row('Regulátor (≥ 1,25 × I)',reg?reg+' A':'> 120 A (více regulátorů)')+
+    row('Denní výnos (odhad)',fmt(Wh,0)+' Wh = '+fmt(Wh/U,0)+' Ah')+
+    row('Voc za mrazu v sérii',fmt(VocC,1)+' V '+badge(okV?'ok':'bad',okV?'OK':'překračuje limit regulátoru'))+
+    row('Voc ≥ napětí baterie + rezerva',badge(Voc*n>=Vc+2?'ok':'warn',Voc*n>=Vc+2?'OK':'málo panelů v sérii')));
+}
+
+/* ---------- ENERGETICKÁ BILANCE ---------- */
+function addLoad(name='',w='',h='',n='1'){
+  const d=document.createElement('div');d.className='lr';
+  d.innerHTML=`<input class="ln" value="${name}" placeholder="název"><input class="lw" inputmode="decimal" value="${w}"><input class="lh" inputmode="decimal" value="${h}"><input class="lk" inputmode="decimal" value="${n}"><button class="act" type="button" title="Odebrat">×</button>`;
+  d.querySelector('button').onclick=()=>{d.remove();calcBudget();};
+  $('g_rows').appendChild(d);
+}
+function calcBudget(){
+  let Wh=0,Wp=0;
+  document.querySelectorAll('#g_rows .lr').forEach(r=>{
+    const g=c=>parseFloat(r.querySelector(c).value.replace(',','.'))||0;
+    Wh+=g('.lw')*g('.lh')*g('.lk');Wp+=g('.lw')*g('.lk');
+  });
+  const U=nv('g_u'),d=nv('g_days'),dod=nv('g_dod')/100,eff=nv('g_eff')/100,sun=nv('g_sun');
+  if(!need(U,d,dod,eff,sun)||U<=0||dod<=0||eff<=0||sun<=0){setOut('g_out',bad('Vyplň kladné hodnoty.'));return;}
+  const Ah=Wh*d/(U*dod*eff), wp=Wh/(sun*0.75*eff);
+  setOut('g_out',row('Spotřeba za den',fmt(Wh,0)+' Wh = '+fmt(Wh/U,0)+' Ah')+row('Součet příkonů (vše zapnuto)',fmt(Wp,0)+' W = '+fmt(Wp/U,0)+' A')+
+    row('Kapacita baterie pro '+fmt(d,1)+' dne',fmt(Ah,0)+' Ah ('+fmt(Ah*U/1000,2)+' kWh)','big')+
+    row('Solár pro pokrytí denní spotřeby',fmt(wp,0)+' Wp','big')+note('Počítej s rezervou 20–30 %. V zimě je výnos solárů několikrát nižší než v létě.'));
+}
+
+function calcLED(){
+  const Vs=nv('l_vs'),Vf=nv('l_vf'),n=nv('l_n'),If=nv('l_if')/1000;
+  if(!need(Vs,Vf,n,If)||n<1||If<=0){setOut('l_out',bad('Vyplň platné hodnoty.'));return;}
+  const drop=Vs-n*Vf;
+  if(drop<=0.5){setOut('l_out',bad(`Napětí zdroje je příliš nízké pro ${fmt(n,0)} LED v sérii (max. ${Math.floor((Vs-0.5)/Vf)} ks).`));return;}
+  const R=drop/If;
+  const E24=[1,1.1,1.2,1.3,1.5,1.6,1.8,2,2.2,2.4,2.7,3,3.3,3.6,3.9,4.3,4.7,5.1,5.6,6.2,6.8,7.5,8.2,9.1];
+  const dec=Math.pow(10,Math.floor(Math.log10(R))),Rs=E24.map(x=>x*dec).concat(E24.map(x=>x*dec*10)).find(x=>x>=R-1e-9);
+  const Ia=drop/Rs, Pr=Ia*Ia*Rs;
+  setOut('l_out',row('Vypočtený rezistor',fmt(R,0)+' Ω','big')+row('Nejbližší vyšší z řady E24',fmt(Rs,0)+' Ω')+row('Skutečný proud LED',fmt(Ia*1000,1)+' mA')+
+    row('Ztráta na rezistoru',fmt(Pr*1000,0)+' mW '+badge(Pr<=0.125?'ok':'warn',Pr*2<=1?'použij min. '+(Pr*2<=0.25?'0,25':Pr*2<=0.5?'0,5':'1')+' W':'výkonový rezistor'))+
+    row('Příkon větve LED',fmt(Vs*Ia,2)+' W'));
+}
+
+/* ---------- TABULKY ---------- */
+function buildVolt(){
+  const k=[1,2,4],c=(b)=>k.map(x=>`<td class="n">${fmt(b*x,1)}</td>`).join('');
+  const rng=(a,b)=>k.map(x=>`<td class="n">${fmt(a*x,1)}–${fmt(b*x,1)}</td>`).join('');
+  $('tbl_volt').innerHTML=`<table><tr><th></th><th class="n">12 V</th><th class="n">24 V</th><th class="n">48 V</th></tr>
+   <tr><td>Olovo: plně nabité v klidu</td>${c(12.7)}</tr>
+   <tr><td>Olovo: absorpce (typ.)</td>${rng(14.4,14.8)}</tr>
+   <tr><td>Olovo: udržovací (float)</td>${rng(13.5,13.8)}</tr>
+   <tr><td>Olovo: odpojení zátěže</td>${c(10.5)}</tr>
+   <tr><td>LiFePO₄: jmenovité (4S/8S/16S)</td>${c(12.8)}</tr>
+   <tr><td>LiFePO₄: nabíjení</td>${rng(14.2,14.6)}</tr>
+   <tr><td>LiFePO₄: odpojení zátěže</td>${rng(10,11)}</tr>
+   <tr><td>Alternátor při chodu</td>${rng(13.8,14.8).replace(/<td class="n">[^<]*<\/td>$/,'<td class="n">–</td>')}</tr></table>`;
+}
+function buildFuse(){
+  const F=[['1','#222','černá'],['2','#9a9a9a','šedá'],['3','#7b4fa6','fialová'],['4','#e58fb4','růžová'],['5','#c8a86a','béžová'],['7,5','#8b5a2b','hnědá'],['10','#d62828','červená'],['15','#6fb7e8','světle modrá'],['20','#f2c200','žlutá'],['25','#f2f2f2','bílá / čirá'],['30','#3fa34d','zelená'],['40','#f08a24','oranžová']];
+  $('tbl_fuse').innerHTML='<table>'+F.map(f=>`<tr><td><span class="sw" style="background:${f[1]}"></span>${f[2]}</td><td class="n">${f[0]} A</td></tr>`).join('')+'</table>';
+}
+function calcCabTable(){
+  setOut('ct_out',`<table><tr><th>mm²</th><th class="n">I trvalý (A)</th><th class="n">max pojistka (A)</th></tr>`+CAB.map(c=>{
+    const f=FUSES.filter(x=>x<=c[1]).pop();return `<tr><td>${sz(c[0])}</td><td class="n">${c[1]}</td><td class="n">${f||'–'}</td></tr>`}).join('')+`</table>`);
+}
+function buildAwg(){
+  const list=[24,22,20,18,16,14,12,10,8,6,4,2,1,0,-1,-2,-3];
+  const name=n=>n>0?String(n):(n===0?'1/0':`${1-n}/0`);
+  $('awg_out').innerHTML=`<table><tr><th>AWG</th><th class="n">Ø (mm)</th><th class="n">mm²</th></tr>`+list.map(n=>{
+    const dm=0.127*Math.pow(92,(36-n)/39),a=Math.PI/4*dm*dm;
+    return `<tr><td>${name(n)}</td><td class="n">${fmt(dm,2)}</td><td class="n">${fmt(a,2)}</td></tr>`}).join('')+`</table>`;
+}
+
+/* ---------- CHECKLISTY ---------- */
+const CHECKS=[
+ {id:'ins',t:'Instalace nového spotřebiče / okruhu',items:[
+  'Určen trvalý a špičkový proud spotřebiče',
+  'Pojistka nebo jistič co nejblíž ke zdroji (baterii), dimenzovaná na kabel',
+  'Průřez zkontrolován na úbytek napětí i na trvalý proud',
+  'Kabel odolný teplu a oděru, vedený v ochranné vlnovci, průchodky v plechu',
+  'Kvalitní lisované koncovky a spoje (bez pájení u vibrací), správná velikost oka',
+  'Velké zátěže spínány přes relé / stykač, ne přes malý spínač',
+  'Kostrový spoj čistý, kov na kov, zajištěn proti uvolnění',
+  'Spoje utaženy předepsaným momentem, svorky zajištěny proti zkratu (krytky)',
+  'Změřen úbytek napětí na plus i mínus pod zátěží',
+  'Zákres do schématu, kabely označeny']},
+ {id:'dia',t:'Diagnostika baterie a nabíjení (12 V, u 24/48 V násobky)',items:[
+  'Vizuálně: svorky, koroze, uchycení, oleje, zápach',
+  'Napětí v klidu (po ≥ 4 h): ≥ 12,4 V (24 V: 24,8 V)',
+  'Při startu napětí nesmí klesnout pod ≈ 9,6 V (24 V: 19,2 V)',
+  'Napětí při běžícím motoru: 13,8–14,8 V (24 V: 27,6–29,6 V)',
+  'Úbytek napětí na kladném kabelu při startu: < 0,5 V',
+  'Úbytek napětí na kostře při startu: < 0,3 V',
+  'Klidový odběr po uspání vozidla: typicky < 50 mA (dle výrobce)',
+  'Zvlnění alternátoru (AC) při chodu: < 0,5 V (diody)',
+  'Alternátor, řemen a pojistky nabíjecího okruhu OK']},
+ {id:'isl',t:'Ostrovní systém 12/24/48 V (karavan, loď, dodávka)',items:[
+  'Baterie s vhodným BMS / ochranami, ventilace u olova',
+  'Hlavní pojistka (MEGA / Class T) a hlavní vypínač u baterie',
+  'Pro 48 V: pojistky, vypínače a relé s jmenovitým DC napětím ≥ 58 V',
+  'Samostatná pojistka na každou větev paralelních baterií',
+  'Měření (shunt, BMS) zapojeno, nastavena kapacita a napětí',
+  'Solární regulátor nastaven na typ baterie, kontrola Voc za mrazu',
+  'Střídač: DC kabel krátký a dostatečný, pojistka u baterie',
+  'AC strana: RCD/jistič, ochrana a uzemnění dle ČSN 33 2000-7-708 / dle typu aplikace',
+  'Společná kostra / záporná sběrnice, jedno místo spojení s kostrou',
+  'Polarita a štítky na všech vodičích, zkušební zapnutí po částech',
+  'Zátěžový test: výdrž, úbytky, teploty spojů (termokamera / dotyk)']}
+];
+function loadState(){try{return JSON.parse(localStorage.getItem('auto_chk')||'{}');}catch(e){return {};}}
+function saveState(s){try{localStorage.setItem('auto_chk',JSON.stringify(s));}catch(e){}}
+function buildChecks(){
+  const st=loadState();
+  $('chkGrid').innerHTML=CHECKS.map(c=>`<article class="card" data-cl="${c.id}"><h3>${c.t}</h3><div class="prog"></div>`+
+    c.items.map((t,i)=>`<label class="chk${st[c.id+i]?' done':''}"><input type="checkbox" data-k="${c.id+i}"${st[c.id+i]?' checked':''}><span>${t}</span></label>`).join('')+`</article>`).join('');
+  updProg();
+}
+function updProg(){
+  document.querySelectorAll('[data-cl]').forEach(card=>{
+    const all=card.querySelectorAll('input'),done=[...all].filter(i=>i.checked).length;
+    card.querySelector('.prog').textContent=`Splněno ${done} z ${all.length}`;
+  });
+}
+$('chkGrid').addEventListener('change',e=>{
+  if(e.target.dataset.k===undefined)return;
+  const st=loadState();st[e.target.dataset.k]=e.target.checked;saveState(st);
+  e.target.closest('.chk').classList.toggle('done',e.target.checked);updProg();
+});
+$('chkReset').onclick=()=>{if(confirm('Vynulovat všechny checklisty?')){saveState({});buildChecks();}};
+
+/* ---------- záložky, systém a start ---------- */
+const ALL=['calcDropDC','calcStart','calcStartTable','calcFuseK','calcPowerDC','calcCmp','calcRuntime','calcSOC','calcCharge','calcSeries','calcDCDC','calcInv','calcSolar','calcBudget','calcLED','calcCabTable'];
+function showTab(id){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('on',t.id==='t-'+id));
+  document.querySelectorAll('#tabs button').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.tab===id)));
+  try{localStorage.setItem('auto_tab',id);}catch(e){}
+}
+document.querySelectorAll('#tabs button').forEach(b=>b.onclick=()=>showTab(b.dataset.tab));
+function setSys(v){
+  document.querySelectorAll('#sysBar button').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.v===v)));
+  document.querySelectorAll('input[data-uv]').forEach(i=>i.value=v);
+  document.querySelectorAll('input[data-ks]').forEach(i=>i.value=String(rd(parseFloat(i.dataset.ks)*v/12,2)).replace('.',','));
+  ALL.forEach(f=>window[f]());
+  try{localStorage.setItem('auto_sys',String(v));}catch(e){}
+}
+document.querySelectorAll('#sysBar button').forEach(b=>b.onclick=()=>setSys(+b.dataset.v));
+
+[['LED osvětlení',24,5,1],['Kompresorová chladnička',45,8,1],['Vodní čerpadlo',60,0.3,1],['Notebook + telefony',60,4,1],['Ventilátor',20,4,1]].forEach(r=>addLoad(...r));
+$('g_add').onclick=()=>addLoad('','','','1');
+buildVolt();buildFuse();buildAwg();buildChecks();
+document.querySelectorAll('[data-calc]').forEach(el=>{
+  const h=e=>window[el.dataset.calc](e);
+  el.addEventListener('input',h);el.addEventListener('change',h);
+});
+ALL.forEach(f=>window[f]());
+try{const t=localStorage.getItem('auto_tab');if(t&&document.getElementById('t-'+t))showTab(t);
+    const s=parseInt(localStorage.getItem('auto_sys'));if([12,24,48].includes(s)&&s!==12)setSys(s);}catch(e){}
+</script>
+</body>
+</html>
