@@ -1,0 +1,872 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Pomůcka elektrikáře</title>
+<style>
+:root{
+  --bg:#f3f5f8;--card:#fff;--ink:#16202c;--mut:#5b6877;--line:#d9e0e8;--acc:#0b63d1;--acc2:#e8f0fc;
+  --ok:#0f7b3f;--okbg:#e2f5ea;--bad:#b3261e;--badbg:#fde8e6;--warn:#8a5a00;--warnbg:#fff3d6;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){--bg:#0f141a;--card:#18202a;--ink:#e6ebf1;--mut:#9aa7b5;--line:#2b3644;--acc:#5aa2ff;--acc2:#1b2b44;
+  --ok:#5fd18b;--okbg:#12301f;--bad:#ff8a80;--badbg:#3a1815;--warn:#ffcf66;--warnbg:#38290a}
+}
+:root[data-theme="dark"]{--bg:#0f141a;--card:#18202a;--ink:#e6ebf1;--mut:#9aa7b5;--line:#2b3644;--acc:#5aa2ff;--acc2:#1b2b44;
+  --ok:#5fd18b;--okbg:#12301f;--bad:#ff8a80;--badbg:#3a1815;--warn:#ffcf66;--warnbg:#38290a}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{padding:14px 16px 6px;max-width:1280px;margin:0 auto}
+header h1{margin:0;font-size:1.35rem}
+header p{margin:2px 0 0;color:var(--mut);font-size:.9rem}
+nav{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line)}
+nav .in{display:flex;gap:6px;overflow-x:auto;padding:8px 16px;max-width:1280px;margin:0 auto}
+nav button{flex:0 0 auto;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:8px 14px;border-radius:999px;font:inherit;cursor:pointer}
+nav button[aria-selected="true"]{background:var(--acc);border-color:var(--acc);color:#fff}
+main{max-width:1280px;margin:0 auto;padding:12px 16px 40px}
+.tab{display:none}.tab.on{display:block}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,330px),1fr));gap:14px;align-items:start}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px}
+.card h3{margin:0 0 4px;font-size:1.05rem}
+.hint{color:var(--mut);font-size:.84rem;margin:2px 0 8px}
+.f{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:8px;align-items:center;margin:6px 0}
+.f label{font-size:.9rem}
+.f .c{display:flex;align-items:center;gap:6px}
+.f i{font-style:normal;color:var(--mut);font-size:.85rem;white-space:nowrap}
+input,select,button.act{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px;width:100%;min-width:0}
+input:focus,select:focus{outline:2px solid var(--acc);outline-offset:0}
+.out{margin-top:10px;border-top:1px dashed var(--line);padding-top:8px}
+.r{display:flex;justify-content:space-between;gap:10px;padding:3px 0;font-size:.95rem}
+.r b{text-align:right}
+.r.big b{font-size:1.15rem;color:var(--acc)}
+.badge{display:inline-block;padding:2px 9px;border-radius:999px;font-size:.8rem;font-weight:600}
+.badge.ok{background:var(--okbg);color:var(--ok)}
+.badge.bad{background:var(--badbg);color:var(--bad)}
+.badge.warn{background:var(--warnbg);color:var(--warn)}
+.note{font-size:.82rem;color:var(--mut);margin:6px 0 0}
+table{border-collapse:collapse;width:100%;font-size:.88rem}
+th,td{border-bottom:1px solid var(--line);padding:4px 6px;text-align:left}
+th{color:var(--mut);font-weight:600}
+td.n,th.n{text-align:right}
+tr.hl td{background:var(--acc2);font-weight:600}
+.scroll{overflow-x:auto}
+button.act{width:auto;cursor:pointer;background:var(--acc2);border-color:var(--acc);color:var(--acc);padding:6px 12px}
+.lr{display:grid;grid-template-columns:1.6fr .8fr .5fr .6fr auto;gap:4px;margin:4px 0}
+.lr input{padding:6px}
+.lr.h{font-size:.75rem;color:var(--mut)}
+.chk{display:flex;gap:8px;align-items:flex-start;padding:5px 0;border-bottom:1px solid var(--line);font-size:.93rem;cursor:pointer}
+.chk input{width:20px;height:20px;flex:0 0 auto;margin-top:2px}
+.chk.done span{color:var(--mut);text-decoration:line-through}
+.prog{font-size:.85rem;color:var(--mut)}
+footer{max-width:1280px;margin:0 auto;padding:0 16px 30px;color:var(--mut);font-size:.8rem}
+@media print{nav,.noprint{display:none}.tab{display:block!important}.card{break-inside:avoid}body{background:#fff;color:#000}}
+</style>
+</head>
+<body>
+<header>
+  <h1>⚡ Pomůcka elektrikáře</h1>
+  <p>Elektroinstalace · FVE · MaR — výpočty, tabulky a kontrolní seznamy. Funguje offline.</p>
+</header>
+<nav><div class="in" role="tablist" id="tabs">
+  <button role="tab" data-tab="el" aria-selected="true">Elektroinstalace</button>
+  <button role="tab" data-tab="fve" aria-selected="false">FVE</button>
+  <button role="tab" data-tab="mar" aria-selected="false">MaR</button>
+  <button role="tab" data-tab="tab" aria-selected="false">Tabulky a převody</button>
+  <button role="tab" data-tab="chk" aria-selected="false">Checklisty</button>
+</div></nav>
+
+<main>
+<!-- ===================== ELEKTROINSTALACE ===================== -->
+<section id="t-el" class="tab on"><div class="grid">
+
+<article class="card" data-calc="calcDrop">
+  <h3>Úbytek napětí a průřez vodiče</h3>
+  <p class="hint">ΔU = k·I·L·(R′·cosφ + X′·sinφ), X′ = 0,08 mΩ/m. Odpor se počítá při zadané provozní teplotě vodiče.</p>
+  <div class="f" data-id="d_sys" data-label="Soustava" data-opts="1|1f 230 V;3|3f 400 V" data-val="3"></div>
+  <div class="f" data-id="d_mode" data-label="Zadání" data-opts="I|Proud;P|Výkon" data-val="P"></div>
+  <div class="f" data-id="d_val" data-label="Proud (A) / výkon (kW)" data-val="11"></div>
+  <div class="f" data-id="d_cos" data-label="cos φ" data-val="0,95"></div>
+  <div class="f" data-id="d_len" data-label="Délka vedení (jednosměrně)" data-val="40" data-unit="m"></div>
+  <div class="f" data-id="d_mat" data-label="Materiál" data-opts="Cu|Měď;Al|Hliník" data-val="Cu"></div>
+  <div class="f" data-id="d_sec" data-label="Průřez" data-unit="mm²" data-val="6" data-opts="1.5|1,5;2.5|2,5;4|4;6|6;10|10;16|16;25|25;35|35;50|50;70|70;95|95;120|120;150|150;185|185;240|240"></div>
+  <div class="f" data-id="d_temp" data-label="Teplota vodiče" data-val="70" data-unit="°C"></div>
+  <div class="f" data-id="d_lim" data-label="Povolený úbytek" data-opts="3|3 %;4|4 %;5|5 %" data-val="3"></div>
+  <p class="note">Typicky 3 % pro světla, 5 % ostatní obvody, 4 % celkem od zdroje (ČSN 33 2000-5-52, informativní).</p>
+  <div class="out" id="d_out"></div>
+</article>
+
+<article class="card" data-calc="calcCable">
+  <h3>Průřez podle zatížitelnosti a jistič</h3>
+  <p class="hint">Podmínka Ib ≤ In ≤ Iz (Iz po korekcích na teplotu a seskupení). Cu, 2 resp. 3 zatížené vodiče, hodnoty dle IEC 60364-5-52 / ČSN 33 2000-5-52.</p>
+  <div class="f" data-id="c_ib" data-label="Návrhový proud Ib" data-val="32" data-unit="A"></div>
+  <div class="f" data-id="c_ins" data-label="Izolace" data-opts="PVC|PVC (70 °C);XLPE|XLPE/PEX (90 °C)" data-val="PVC"></div>
+  <div class="f" data-id="c_meth" data-label="Způsob uložení" data-opts="A1|A1 vodiče v trubce v tepelné izolaci;B1|B1 vodiče v trubce na zdi / liště;B2|B2 kabel v trubce na zdi / liště;C|C kabel na zdi / pod omítkou" data-val="C"></div>
+  <div class="f" data-id="c_n" data-label="Zatížené vodiče" data-opts="2|2 (1f);3|3 (3f)" data-val="3"></div>
+  <div class="f" data-id="c_mat" data-label="Materiál" data-opts="Cu|Měď;Al|Hliník (orient., min. 16 mm²)" data-val="Cu"></div>
+  <div class="f" data-id="c_ta" data-label="Teplota okolí" data-unit="°C" data-val="30" data-opts="10|10;15|15;20|20;25|25;30|30;35|35;40|40;45|45;50|50;55|55;60|60"></div>
+  <div class="f" data-id="c_ng" data-label="Seskupené obvody" data-val="1" data-opts="1|1;2|2;3|3;4|4;5|5;6|6;7|7;8|8;9|9;12|12;16|16;20|20"></div>
+  <div class="out" id="c_out"></div>
+  <p class="note">Orientační pomůcka. Pro >120 mm², zemní uložení a zvláštní podmínky použijte přímo normu. Úbytek napětí a zkratové poměry ověřte zvlášť.</p>
+</article>
+
+<article class="card" data-calc="calcLoop">
+  <h3>Impedance smyčky a odpojení (TN)</h3>
+  <p class="hint">Podmínka automatického odpojení: Zs ≤ U₀ / Ia, kde Ia = k·In (B 5×, C 10×, D 20×).</p>
+  <div class="f" data-id="l_u0" data-label="Fázové napětí U₀" data-val="230" data-unit="V"></div>
+  <div class="f" data-id="l_ch" data-label="Charakteristika" data-opts="5|B;10|C;20|D" data-val="5"></div>
+  <div class="f" data-id="l_in" data-label="Jmenovitý proud In" data-val="16" data-unit="A"></div>
+  <div class="f" data-id="l_z0" data-label="Impedance před obvodem Zs₀" data-val="0,3" data-unit="Ω"></div>
+  <div class="f" data-id="l_len" data-label="Délka vedení" data-val="60" data-unit="m"></div>
+  <div class="f" data-id="l_sf" data-label="Průřez fázového vodiče" data-val="2,5" data-unit="mm²"></div>
+  <div class="f" data-id="l_spe" data-label="Průřez PE vodiče" data-val="2,5" data-unit="mm²"></div>
+  <div class="f" data-id="l_mat" data-label="Materiál" data-opts="Cu|Měď;Al|Hliník" data-val="Cu"></div>
+  <div class="f" data-id="l_th" data-label="Teplota vodiče" data-val="70" data-unit="°C"></div>
+  <div class="out" id="l_out"></div>
+  <p class="note">Doplňující ochrana RCD 30 mA se vyžaduje nezávisle na tomto výpočtu. Skutečnou hodnotu vždy ověřte měřením při revizi.</p>
+</article>
+
+<article class="card" data-calc="calcPower">
+  <h3>Výkon ↔ proud</h3>
+  <div class="f" data-id="p_sys" data-label="Soustava" data-opts="1|1f;3|3f" data-val="3"></div>
+  <div class="f" data-id="p_u" data-label="Napětí (sdružené u 3f)" data-val="400" data-unit="V"></div>
+  <div class="f" data-id="p_cos" data-label="cos φ" data-val="0,9"></div>
+  <div class="f" data-id="p_mode" data-label="Zadávám" data-opts="P|Činný výkon P (kW);I|Proud I (A)" data-val="P"></div>
+  <div class="f" data-id="p_val" data-label="Hodnota" data-val="11"></div>
+  <div class="out" id="p_out"></div>
+</article>
+
+<article class="card" data-calc="calcComp">
+  <h3>Kompenzace účiníku</h3>
+  <p class="hint">Qc = P·(tg φ₁ − tg φ₂)</p>
+  <div class="f" data-id="k_p" data-label="Činný výkon P" data-val="50" data-unit="kW"></div>
+  <div class="f" data-id="k_c1" data-label="Stávající cos φ" data-val="0,8"></div>
+  <div class="f" data-id="k_c2" data-label="Cílový cos φ" data-val="0,98"></div>
+  <div class="out" id="k_out"></div>
+</article>
+
+<article class="card" data-calc="calcBilance" id="bilCard">
+  <h3>Bilance příkonu rozvaděče</h3>
+  <p class="hint">Instalovaný výkon × počet × soudobost (β). Proud pro 3f 400 V.</p>
+  <div class="lr h"><span>Spotřebič</span><span>P (kW)</span><span>ks</span><span>β</span><span></span></div>
+  <div id="b_rows"></div>
+  <button class="act noprint" type="button" id="b_add">+ přidat řádek</button>
+  <div class="f" data-id="b_cos" data-label="cos φ (průměr)" data-val="0,95"></div>
+  <div class="f" data-id="b_res" data-label="Rezerva" data-val="20" data-unit="%"></div>
+  <div class="out" id="b_out"></div>
+</article>
+
+</div></section>
+
+<!-- ===================== FVE ===================== -->
+<section id="t-fve" class="tab"><div class="grid">
+
+<article class="card" data-calc="calcString" style="grid-column:1/-1">
+  <h3>Návrh řetězce (stringu) FVE</h3>
+  <p class="hint">Voc při minimální teplotě nesmí překročit max. DC napětí střídače; Vmpp za tepla musí zůstat nad dolní mezí MPPT. Hodnoty z datasheetu panelu a střídače při STC.</p>
+  <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr))">
+    <div>
+      <b>Panel</b>
+      <div class="f" data-id="s_pm" data-label="Pmax" data-val="440" data-unit="Wp"></div>
+      <div class="f" data-id="s_voc" data-label="Voc" data-val="40,3" data-unit="V"></div>
+      <div class="f" data-id="s_vmp" data-label="Vmpp" data-val="33,9" data-unit="V"></div>
+      <div class="f" data-id="s_isc" data-label="Isc" data-val="13,9" data-unit="A"></div>
+      <div class="f" data-id="s_imp" data-label="Impp" data-val="13,0" data-unit="A"></div>
+      <div class="f" data-id="s_tkv" data-label="TK Voc" data-val="-0,27" data-unit="%/°C"></div>
+      <div class="f" data-id="s_tkm" data-label="TK Vmpp" data-val="-0,30" data-unit="%/°C"></div>
+    </div>
+    <div>
+      <b>Střídač</b>
+      <div class="f" data-id="s_vdc" data-label="Max. DC napětí" data-val="1000" data-unit="V"></div>
+      <div class="f" data-id="s_vlo" data-label="MPPT od" data-val="160" data-unit="V"></div>
+      <div class="f" data-id="s_vhi" data-label="MPPT do" data-val="850" data-unit="V"></div>
+      <div class="f" data-id="s_imax" data-label="Max. proud / MPPT" data-val="16" data-unit="A"></div>
+      <div class="f" data-id="s_iscmax" data-label="Max. Isc / MPPT" data-val="22" data-unit="A"></div>
+      <div class="f" data-id="s_nm" data-label="Počet MPPT" data-val="2"></div>
+      <div class="f" data-id="s_pac" data-label="Jmenovitý AC výkon" data-val="10" data-unit="kW"></div>
+    </div>
+    <div>
+      <b>Podmínky a konfigurace</b>
+      <div class="f" data-id="s_tmin" data-label="Min. teplota okolí" data-val="-15" data-unit="°C"></div>
+      <div class="f" data-id="s_tcell" data-label="Max. teplota článků" data-val="70" data-unit="°C"></div>
+      <div class="f" data-id="s_n" data-label="Panelů v řetězci" data-val="14"></div>
+      <div class="f" data-id="s_par" data-label="Paralelních řetězců / MPPT" data-val="1"></div>
+      <div class="f" data-id="s_used" data-label="Využitých MPPT" data-val="2"></div>
+    </div>
+  </div>
+  <div class="out" id="s_out"></div>
+</article>
+
+<article class="card" data-calc="calcDC">
+  <h3>DC kabel — úbytek a ztráty</h3>
+  <p class="hint">Plus i mínus: smyčka 2·L. Doporučení: ztráty na DC straně ≤ 1–2 %.</p>
+  <div class="f" data-id="dc_i" data-label="Proud řetězce" data-val="13" data-unit="A"></div>
+  <div class="f" data-id="dc_u" data-label="Napětí řetězce (Vmpp)" data-val="475" data-unit="V"></div>
+  <div class="f" data-id="dc_l" data-label="Délka (jednosměrně)" data-val="35" data-unit="m"></div>
+  <div class="f" data-id="dc_s" data-label="Průřez" data-unit="mm²" data-val="6" data-opts="2.5|2,5;4|4;6|6;10|10;16|16;25|25"></div>
+  <div class="f" data-id="dc_t" data-label="Teplota kabelu" data-val="70" data-unit="°C"></div>
+  <div class="out" id="dc_out"></div>
+  <p class="note">Proudové dimenzování DC kabelu min. 1,25·Isc (IEC 62548), solární kabel dle ČSN EN 50618 (H1Z2Z2-K).</p>
+</article>
+
+<article class="card" data-calc="calcFuse">
+  <h3>DC pojistky řetězců a AC strana</h3>
+  <p class="hint">Pojistka řetězce gPV: 1,56·Isc ≤ In ≤ max. jmenovitá série pojistka modulu.</p>
+  <div class="f" data-id="fu_isc" data-label="Isc panelu" data-val="13,9" data-unit="A"></div>
+  <div class="f" data-id="fu_max" data-label="Max. pojistka modulu" data-val="25" data-unit="A"></div>
+  <div class="f" data-id="fu_n" data-label="Paralelních řetězců" data-val="3"></div>
+  <div class="f" data-id="ac_p" data-label="AC výkon střídače" data-val="10" data-unit="kW"></div>
+  <div class="f" data-id="ac_ph" data-label="Výstup" data-opts="3|3f 400 V;1|1f 230 V" data-val="3"></div>
+  <div class="out" id="fu_out"></div>
+  <p class="note">Orientační. Rozhoduje max. výstupní proud a doporučení výrobce střídače. Nezapomeňte na odpojovač DC, SPD (DC i AC) a RCD typu dle výrobce.</p>
+</article>
+
+<article class="card" data-calc="calcYield">
+  <h3>Roční výnos a návratnost</h3>
+  <p class="hint">Hrubý odhad. Referenční výnos ~1000 kWh/kWp (ČR/SK, J 30–35°). Přesnost řádově ±10–15 %, pro nabídku použijte PVGIS.</p>
+  <div class="f" data-id="y_kwp" data-label="Instalovaný výkon" data-val="8,8" data-unit="kWp"></div>
+  <div class="f" data-id="y_ref" data-label="Referenční výnos (optimum)" data-val="1000" data-unit="kWh/kWp"></div>
+  <div class="f" data-id="y_or" data-label="Orientace / sklon" data-val="1" data-opts="1|J 30–35° (optimum);0.96|JV / JZ 30°;0.93|J plochá 10°;0.88|V–Z plochá 10°;0.86|V / Z 30°;0.72|J fasáda 90°;0.6|S 30°"></div>
+  <div class="f" data-id="y_deg" data-label="Degradace / rok" data-val="0,5" data-unit="%"></div>
+  <div class="f" data-id="y_inv" data-label="Investice" data-val="320000" data-unit="Kč/€"></div>
+  <div class="f" data-id="y_sc" data-label="Vlastní spotřeba" data-val="40" data-unit="%"></div>
+  <div class="f" data-id="y_buy" data-label="Cena nákupu" data-val="6,5" data-unit="/kWh"></div>
+  <div class="f" data-id="y_exp" data-label="Výkupní cena" data-val="1,5" data-unit="/kWh"></div>
+  <div class="f" data-id="y_g" data-label="Růst ceny energie / rok" data-val="3" data-unit="%"></div>
+  <div class="out" id="y_out"></div>
+</article>
+
+<article class="card" data-calc="calcBat">
+  <h3>Velikost baterie</h3>
+  <div class="f" data-id="bt_e" data-label="Energie z baterie / den" data-val="8" data-unit="kWh"></div>
+  <div class="f" data-id="bt_d" data-label="Dnů autonomie" data-val="1"></div>
+  <div class="f" data-id="bt_dod" data-label="Využitelná hloubka vybití" data-val="90" data-unit="%"></div>
+  <div class="f" data-id="bt_eta" data-label="Účinnost cyklu" data-val="92" data-unit="%"></div>
+  <div class="f" data-id="bt_p" data-label="Špičkový odběr z baterie" data-val="5" data-unit="kW"></div>
+  <div class="f" data-id="bt_v" data-label="Napětí baterie" data-val="51,2" data-unit="V"></div>
+  <div class="out" id="bt_out"></div>
+  <p class="note">Pravidlo palce pro rodinný dům: 1–1,5 kWh na 1 kWp pro zvýšení vlastní spotřeby.</p>
+</article>
+
+<article class="card" data-calc="calcRows">
+  <h3>Rozestup řad (plochá střecha)</h3>
+  <p class="hint">Bez zastínění v poledne 21. 12.: d = L·cos β + L·sin β / tg(h), h = 90° − φ − 23,44°.</p>
+  <div class="f" data-id="r_lat" data-label="Zeměpisná šířka φ" data-val="49,5" data-unit="°"></div>
+  <div class="f" data-id="r_l" data-label="Délka panelu ve spádu" data-val="1,76" data-unit="m"></div>
+  <div class="f" data-id="r_b" data-label="Sklon β" data-val="15" data-unit="°"></div>
+  <div class="out" id="r_out"></div>
+  <p class="note">U V–Z systémů a menších sklonů může být rozestup menší. Pro přesnost použijte simulaci stínění.</p>
+</article>
+
+</div></section>
+
+<!-- ===================== MaR ===================== -->
+<section id="t-mar" class="tab"><div class="grid">
+
+<article class="card" data-calc="calcScale">
+  <h3>Škálování analogového signálu</h3>
+  <p class="hint">Dvousměrně: zadej signál nebo fyzikální hodnotu.</p>
+  <div class="f" data-id="m_type" data-label="Typ signálu" data-opts="4,20,mA|4–20 mA;0,20,mA|0–20 mA;0,10,V|0–10 V;2,10,V|2–10 V" data-val="4,20,mA"></div>
+  <div class="f" data-id="m_lo" data-label="Rozsah od" data-val="0"></div>
+  <div class="f" data-id="m_hi" data-label="Rozsah do" data-val="10" data-unit="bar"></div>
+  <div class="f" data-id="m_sig" data-label="Signál" data-val="12" data-unit="mA"></div>
+  <div class="f" data-id="m_val" data-label="Fyzikální hodnota" data-val=""></div>
+  <div class="out" id="m_out"></div>
+</article>
+
+<article class="card" data-calc="calcRTD">
+  <h3>Teplotní čidla — odpor ↔ teplota</h3>
+  <p class="hint">Pt100/Pt1000 dle EN 60751, Ni1000 dle DIN 43760, NTC rovnicí β.</p>
+  <div class="f" data-id="t_type" data-label="Čidlo" data-opts="pt100|Pt100;pt1000|Pt1000;ni1000|Ni1000 (DIN, TK 6180);ntc|NTC (β)" data-val="pt1000"></div>
+  <div class="f" data-id="t_b" data-label="β / R25 (jen NTC)" data-val="3950"></div>
+  <div class="f" data-id="t_r25" data-label="R25 (jen NTC)" data-val="10000" data-unit="Ω"></div>
+  <div class="f" data-id="t_t" data-label="Teplota" data-val="20" data-unit="°C"></div>
+  <div class="f" data-id="t_r" data-label="Odpor" data-val="" data-unit="Ω"></div>
+  <div class="out" id="t_out"></div>
+</article>
+
+<article class="card" data-calc="calcWire">
+  <h3>Chyba dvouvodičového čidla</h3>
+  <div class="f" data-id="w_type" data-label="Čidlo" data-opts="pt100|Pt100;pt1000|Pt1000" data-val="pt100"></div>
+  <div class="f" data-id="w_l" data-label="Délka kabelu" data-val="30" data-unit="m"></div>
+  <div class="f" data-id="w_s" data-label="Průřez vodiče" data-val="0,5" data-unit="mm²"></div>
+  <div class="f" data-id="w_t" data-label="Teplota měření" data-val="20" data-unit="°C"></div>
+  <div class="out" id="w_out"></div>
+</article>
+
+<article class="card" data-calc="calcLoopI">
+  <h3>Proudová smyčka 4–20 mA — rozpočet napětí</h3>
+  <p class="hint">Napájení musí pokrýt min. napětí vysílače + zátěž při 22 mA.</p>
+  <div class="f" data-id="i_vs" data-label="Napájení smyčky" data-val="24" data-unit="V"></div>
+  <div class="f" data-id="i_vmin" data-label="Min. napětí vysílače" data-val="12" data-unit="V"></div>
+  <div class="f" data-id="i_rl" data-label="Zátěž (vstup PLC, indikátory)" data-val="250" data-unit="Ω"></div>
+  <div class="f" data-id="i_l" data-label="Délka kabelu (jednosměrně)" data-val="200" data-unit="m"></div>
+  <div class="f" data-id="i_s" data-label="Průřez vodiče" data-val="0,5" data-unit="mm²"></div>
+  <div class="out" id="i_out"></div>
+</article>
+
+<article class="card" data-calc="calcPID">
+  <h3>Nastavení PID (Ziegler–Nichols)</h3>
+  <div class="f" data-id="z_m" data-label="Metoda" data-opts="osc|Kmity (Ku, Tu);step|Přechodová char. (K, L, T)" data-val="osc"></div>
+  <div class="f" data-id="z_a" data-label="Ku / K" data-val="2,4"></div>
+  <div class="f" data-id="z_b" data-label="Tu / L" data-val="60" data-unit="s"></div>
+  <div class="f" data-id="z_c" data-label="T (jen metoda 2)" data-val="300" data-unit="s"></div>
+  <div class="out" id="z_out"></div>
+  <p class="note">Metoda 1: Ku = kritické zesílení, Tu = perioda kmitů. Metoda 2: K = zisk soustavy, L = dopravní zpoždění, T = časová konstanta. U pomalých soustav (VZT, topení) začněte s Kp o 30–50 % nižším.</p>
+</article>
+
+<article class="card" data-calc="calcFlow">
+  <h3>Výkon ↔ průtok (voda) a rychlost</h3>
+  <div class="f" data-id="q_p" data-label="Výkon" data-val="20" data-unit="kW"></div>
+  <div class="f" data-id="q_dt" data-label="Rozdíl teplot ΔT" data-val="10" data-unit="K"></div>
+  <div class="f" data-id="q_d" data-label="Vnitřní průměr trubky" data-val="26" data-unit="mm"></div>
+  <div class="out" id="q_out"></div>
+  <p class="note">Voda: 1,163 kWh/(m³·K). Pro glykol je měrná tepelná kapacita nižší, průtok je potřeba zvýšit.</p>
+</article>
+
+<article class="card" data-calc="calcKv">
+  <h3>Ventil — Kv a autorita</h3>
+  <div class="f" data-id="kv_q" data-label="Průtok Q" data-val="1,72" data-unit="m³/h"></div>
+  <div class="f" data-id="kv_dp" data-label="Tlaková ztráta ventilu Δp" data-val="10" data-unit="kPa"></div>
+  <div class="f" data-id="kv_rest" data-label="Tlaková ztráta zbytku okruhu" data-val="20" data-unit="kPa"></div>
+  <div class="out" id="kv_out"></div>
+  <p class="note">Kv = Q / √(Δp/100) [m³/h; kPa]. Autorita β = Δp_ventil / (Δp_ventil + Δp_okruh), doporučeno ≥ 0,3.</p>
+</article>
+
+<article class="card">
+  <h3>Tahák: signály a sběrnice</h3>
+  <div class="scroll"><table>
+    <tr><th>Typ</th><th>Poznámka</th></tr>
+    <tr><td>4–20 mA</td><td>Porucha < 3,8 mA, nadlimit > 20,5 mA (NAMUR NE43). Stíněný kabel, stínění uzemnit na jedné straně.</td></tr>
+    <tr><td>0–10 V</td><td>Citlivé na úbytek a rušení; vhodné do cca 100 m u skříně.</td></tr>
+    <tr><td>Pt100 / Pt1000</td><td>α = 0,00385; 3/4-vodič pro delší vedení. Pt1000 je méně citlivý na odpor vedení.</td></tr>
+    <tr><td>Ni1000</td><td>Časté v TZB/regulaci, TK 6180 ppm/K (DIN) nebo 5000 ppm/K (LG-Ni1000, jiná tabulka!).</td></tr>
+    <tr><td>Digitální vstup 24 V DC</td><td>Typicky log. 1 > 15 V, log. 0 < 5 V.</td></tr>
+    <tr><td>Modbus RTU (RS-485)</td><td>Do 1200 m, 2 žíly kroucený pár + zem, 120 Ω zakončení na obou koncích, max. 247 adres, shodná rychlost / parita / stop bity.</td></tr>
+    <tr><td>KNX TP</td><td>Max. 1000 m na linii, 9600 bit/s, kabel J-Y(St)Y 2×2×0,8.</td></tr>
+  </table></div>
+</article>
+
+</div></section>
+
+<!-- ===================== TABULKY ===================== -->
+<section id="t-tab" class="tab"><div class="grid">
+
+<article class="card" data-calc="calcFrom">
+  <h3>Převod výkonových jednotek</h3>
+  <div class="f" data-id="u_v" data-label="Hodnota" data-val="1"></div>
+  <div class="f" data-id="u_u" data-label="Jednotka" data-val="kW" data-opts="W|W;kW|kW;MW|MW;hpm|k (metrická, 735,5 W);hp|hp (mech., 745,7 W);btu|BTU/h;kcal|kcal/h;rt|RT (chladicí tuna)"></div>
+  <div class="out" id="u_out"></div>
+</article>
+
+<article class="card">
+  <h3>Barvy vodičů</h3>
+  <table>
+    <tr><th>Vodič</th><th>Barva</th></tr>
+    <tr><td>PE</td><td>zeleno-žlutá</td></tr>
+    <tr><td>N</td><td>světle modrá</td></tr>
+    <tr><td>PEN</td><td>zeleno-žlutá, konce světle modré</td></tr>
+    <tr><td>L1 / L2 / L3</td><td>hnědá / černá / šedá</td></tr>
+    <tr><td>Spínaná fáze</td><td>libovolná z fázových barev</td></tr>
+  </table>
+  <p class="note">Barvy zelená, žlutá a modrá se nesmí použít na jiný účel než PE, PEN a N.</p>
+</article>
+
+<article class="card">
+  <h3>Charakteristiky jističů a typy RCD</h3>
+  <table>
+    <tr><th>Char.</th><th class="n">Okamžité vybavení</th><th>Použití</th></tr>
+    <tr><td>B</td><td class="n">3–5 × In</td><td>světla, zásuvky, dlouhá vedení</td></tr>
+    <tr><td>C</td><td class="n">5–10 × In</td><td>běžné spotřebiče, motory s malým rozběhem</td></tr>
+    <tr><td>D</td><td class="n">10–20 × In</td><td>transformátory, motory s velkým rozběhem</td></tr>
+    <tr><td>K / Z</td><td class="n">8–14 / 2–3 × In</td><td>motory / polovodiče</td></tr>
+  </table>
+  <table style="margin-top:10px">
+    <tr><th>RCD typ</th><th>Detekuje</th></tr>
+    <tr><td>AC</td><td>sinusový střídavý reziduální proud</td></tr>
+    <tr><td>A</td><td>+ pulzní stejnosměrný (běžný standard dnes)</td></tr>
+    <tr><td>F</td><td>+ smíšené frekvence (měniče frekvence)</td></tr>
+    <tr><td>B</td><td>+ hladký stejnosměrný (FVE, wallboxy, měniče 3f), řiďte se výrobcem</td></tr>
+  </table>
+</article>
+
+<article class="card">
+  <h3>Krytí IP</h3>
+  <table>
+    <tr><th>1. číslice</th><th>Pevná tělesa</th><th>2. číslice</th><th>Voda</th></tr>
+    <tr><td>0</td><td>–</td><td>0</td><td>–</td></tr>
+    <tr><td>2</td><td>≥ 12,5 mm (prst)</td><td>2</td><td>kapky, sklon 15°</td></tr>
+    <tr><td>3</td><td>≥ 2,5 mm</td><td>3</td><td>déšť (sprška)</td></tr>
+    <tr><td>4</td><td>≥ 1 mm</td><td>4</td><td>stříkání ze všech stran</td></tr>
+    <tr><td>5</td><td>prach (omezeně)</td><td>5</td><td>tryskající voda</td></tr>
+    <tr><td>6</td><td>prachotěsné</td><td>6</td><td>silné proudy</td></tr>
+    <tr><td></td><td></td><td>7 / 8</td><td>ponoření dočasné / trvalé</td></tr>
+  </table>
+</article>
+
+<article class="card" data-calc="calcSizeTable">
+  <h3>Průřez → max. jistič (orientačně)</h3>
+  <p class="hint">Cu PVC, 3 zatížené vodiče, 30 °C, 1 obvod — nejbližší nižší typizovaný In pod Iz.</p>
+  <div class="out" id="st_out"></div>
+</article>
+
+<article class="card">
+  <h3>AWG → mm²</h3>
+  <div id="awg_out" class="scroll"></div>
+</article>
+
+<article class="card">
+  <h3>Normy a předpisy (orientační přehled)</h3>
+  <table>
+    <tr><td>ČSN 33 2000-4-41</td><td>Ochrana před úrazem elektrickým proudem</td></tr>
+    <tr><td>ČSN 33 2000-4-43</td><td>Ochrana proti nadproudům</td></tr>
+    <tr><td>ČSN 33 2000-5-52</td><td>Elektrická vedení</td></tr>
+    <tr><td>ČSN 33 2000-6</td><td>Revize</td></tr>
+    <tr><td>ČSN 33 2000-7-712</td><td>Fotovoltaické (PV) soustavy</td></tr>
+    <tr><td>ČSN EN IEC 62548-1</td><td>Návrh PV polí</td></tr>
+    <tr><td>ČSN EN 62446-1</td><td>PV: dokumentace, uvedení do provozu, kontroly</td></tr>
+    <tr><td>ČSN EN 62305</td><td>Ochrana před bleskem</td></tr>
+    <tr><td>ČSN EN 61439</td><td>Rozváděče nn</td></tr>
+    <tr><td>ČSN 33 1500</td><td>Revize elektrických zařízení</td></tr>
+    <tr><td>ČSN EN 50110-1</td><td>Obsluha a práce na elektrických zařízeních</td></tr>
+    <tr><td>ČSN EN 61131-3</td><td>Programovací jazyky PLC</td></tr>
+  </table>
+  <p class="note">Vždy ověřte aktuální vydání a národní doplňky.</p>
+</article>
+
+</div></section>
+
+<!-- ===================== CHECKLISTY ===================== -->
+<section id="t-chk" class="tab"><div class="grid" id="chkGrid"></div>
+<p class="noprint"><button class="act" type="button" id="chkReset">Vynulovat všechny checklisty</button></p>
+</section>
+</main>
+
+<footer>
+  Pomůcka je orientační a nenahrazuje projekt, platné normy, předpisy distributora ani odpovědnost oprávněné osoby. Výpočty vždy ověřte. Stav checklistů se ukládá jen do tohoto prohlížeče.
+</footer>
+
+<script>
+'use strict';
+/* ---------- pomocné funkce ---------- */
+const $=id=>document.getElementById(id);
+const nv=id=>parseFloat(String($(id).value).replace(',','.').replace(/\s/g,''));
+const fmt=(x,d=2)=>Number.isFinite(x)?x.toLocaleString('cs-CZ',{maximumFractionDigits:d}):'–';
+const rd=(x,d)=>Math.round(x*10**d)/10**d;
+const need=(...a)=>a.every(Number.isFinite);
+const setOut=(id,h)=>{$(id).innerHTML=h;};
+const row=(k,v,c)=>`<div class="r${c?' '+c:''}"><span>${k}</span><b>${v}</b></div>`;
+const badge=(t,txt)=>`<span class="badge ${t}">${txt}</span>`;
+const bad=txt=>`<p class="hint">${txt}</p>`;
+const note=t=>`<p class="note">${t}</p>`;
+
+const SIZES=[1.5,2.5,4,6,10,16,25,35,50,70,95,120];
+const SIZES_ALL=[1.5,2.5,4,6,10,16,25,35,50,70,95,120,150,185,240];
+const STD_IN=[6,10,13,16,20,25,32,40,50,63,80,100,125,160,200,250,315,400,500,630];
+const RHO20={Cu:1/56,Al:1/35}, ALPHA={Cu:0.00393,Al:0.00403};
+const rho=(m,t)=>RHO20[m]*(1+ALPHA[m]*(t-20));
+const nextStd=x=>STD_IN.find(v=>v>=x);
+
+/* ---------- vytvoření polí ---------- */
+document.querySelectorAll('.f').forEach(e=>{
+  const d=e.dataset; let ctl;
+  if(d.opts){
+    ctl=`<select id="${d.id}">`+d.opts.split(';').map(o=>{const i=o.indexOf('|');const v=o.slice(0,i),t=o.slice(i+1);
+      return `<option value="${v}"${v===d.val?' selected':''}>${t}</option>`;}).join('')+`</select>`;
+  } else ctl=`<input id="${d.id}" type="text" inputmode="decimal" autocomplete="off" value="${d.val??''}">`;
+  e.innerHTML=`<label for="${d.id}">${d.label}</label><div class="c">${ctl}${d.unit?`<i id="${d.id}_u">${d.unit}</i>`:''}</div>`;
+});
+
+/* ---------- ELEKTROINSTALACE ---------- */
+function calcDrop(){
+  const sys=$('d_sys').value, mode=$('d_mode').value, mat=$('d_mat').value;
+  const val=nv('d_val'), cos=nv('d_cos'), L=nv('d_len'), th=nv('d_temp');
+  const S=parseFloat($('d_sec').value), lim=parseFloat($('d_lim').value);
+  if(!need(val,cos,L,th)||cos<=0||cos>1||L<=0||val<=0){setOut('d_out',bad('Vyplň platné hodnoty (cos φ 0–1, kladné číslo).'));return;}
+  const U=sys==='1'?230:400, kI=sys==='1'?1:Math.sqrt(3), kU=sys==='1'?2:Math.sqrt(3);
+  const I=mode==='I'?val:val*1000/(kI*U*cos);
+  const sin=Math.sqrt(1-cos*cos);
+  const dU=s=>kU*I*L*(rho(mat,th)/s*cos+0.00008*sin);
+  const pct=s=>dU(s)/U*100;
+  const ok=pct(S)<=lim, minS=SIZES_ALL.find(s=>pct(s)<=lim);
+  setOut('d_out',
+    row('Proud',fmt(I)+' A')+
+    row('Úbytek napětí',fmt(dU(S))+' V','')+
+    row('Úbytek v %',fmt(pct(S))+' % '+badge(ok?'ok':'bad',ok?'vyhovuje':'překročeno'),'big')+
+    row('Min. průřez pro limit '+lim+' %',minS?fmt(minS)+' mm²':'> 240 mm² (paralelní vodiče)')+
+    row('Ztráty ve vedení (Joule)',fmt((sys==='1'?2:3)*I*I*rho(mat,th)/S*L,0)+' W'));
+}
+
+/* Zatížitelnost [mm²: 1,5 2,5 4 6 10 16 25 35 50 70 95 120], Cu, 30 °C */
+const AMP={
+ PVC:{A1:{2:[14.5,19.5,26,34,46,61,80,99,119,151,182,210],3:[13.5,18,24,31,42,56,73,89,108,136,164,188]},
+      B1:{2:[17.5,24,32,41,57,76,101,125,151,192,232,269],3:[15.5,21,28,36,50,68,89,110,134,171,207,239]},
+      B2:{2:[16.5,23,30,38,52,69,90,111,133,168,201,232],3:[15,20,27,34,46,62,80,99,118,149,179,206]},
+      C: {2:[19.5,27,36,46,63,85,112,138,168,213,258,299],3:[17.5,24,32,41,57,76,96,119,144,184,223,259]}},
+ XLPE:{A1:{2:[19,26,35,45,61,81,106,131,158,200,241,278],3:[17,23,31,40,54,73,95,117,141,179,216,249]},
+      B1:{2:[23,31,42,54,75,100,133,164,198,253,306,354],3:[20,28,37,48,66,88,117,144,175,222,269,312]},
+      B2:{2:[22,30,40,51,69,91,119,146,175,221,265,305],3:[19.5,26,35,44,60,80,105,128,154,194,233,268]},
+      C: {2:[24,33,45,58,80,107,138,171,209,269,328,382],3:[22,30,40,52,71,96,119,147,179,229,278,322]}}
+};
+const KT={
+ PVC:{10:1.22,15:1.17,20:1.12,25:1.06,30:1,35:.94,40:.87,45:.79,50:.71,55:.61,60:.5},
+ XLPE:{10:1.15,15:1.12,20:1.08,25:1.04,30:1,35:.96,40:.91,45:.87,50:.82,55:.76,60:.71}};
+const KG={1:1,2:.8,3:.7,4:.65,5:.6,6:.57,7:.54,8:.52,9:.5,12:.45,16:.41,20:.38};
+
+function calcCable(){
+  const Ib=nv('c_ib'); const ins=$('c_ins').value, meth=$('c_meth').value, n=$('c_n').value, mat=$('c_mat').value;
+  const ta=$('c_ta').value, ng=$('c_ng').value;
+  if(!need(Ib)||Ib<=0){setOut('c_out',bad('Zadej kladný návrhový proud.'));return;}
+  const f=KT[ins][ta]*KG[ng]*(mat==='Al'?0.78:1);
+  const base=AMP[ins][meth][n];
+  const In=nextStd(Ib);
+  const Iz=base.map(a=>a*f);
+  let pick=-1;
+  if(In){pick=SIZES.findIndex((s,i)=>(mat==='Cu'||s>=16)&&Iz[i]>=In);}
+  let h='';
+  if(!In||pick<0){h+=row('Doporučený jistič In',In?In+' A':'> 630 A')+row('Průřez','mimo rozsah tabulky (> 120 mm²)','big');}
+  else h+=row('Jistič In (nejbližší ≥ Ib)',In+' A')+row('Min. průřez',fmt(SIZES[pick])+' mm² '+(mat==='Cu'?'Cu':'Al'),'big')+row('Iz po korekcích',fmt(Iz[pick],1)+' A');
+  h+=row('Korekční součinitel (teplota × seskupení'+(mat==='Al'?' × Al':'')+')',fmt(f,3));
+  h+=`<div class="scroll"><table><tr><th>mm²</th><th class="n">Iz (A)</th><th class="n">max In (A)</th></tr>`+
+     SIZES.map((s,i)=>{const mx=STD_IN.filter(x=>x<=Iz[i]).pop();const na=mat==='Al'&&s<16;
+       return `<tr${i===pick?' class="hl"':''}><td>${s}</td><td class="n">${na?'–':fmt(Iz[i],1)}</td><td class="n">${na||!mx?'–':mx}</td></tr>`}).join('')+`</table></div>`;
+  setOut('c_out',h);
+}
+
+function calcLoop(){
+  const U0=nv('l_u0'), k=parseFloat($('l_ch').value), In=nv('l_in'), z0=nv('l_z0'), L=nv('l_len'), sf=nv('l_sf'), spe=nv('l_spe'), th=nv('l_th');
+  const mat=$('l_mat').value;
+  if(!need(U0,In,z0,L,sf,spe,th)||In<=0||sf<=0||spe<=0){setOut('l_out',bad('Vyplň všechny hodnoty.'));return;}
+  const a=rho(mat,th)*(1/sf+1/spe), b=0.00016;
+  const Zc=Math.sqrt((a*L)**2+(b*L)**2), Zs=z0+Zc;
+  const Ia=k*In, Zmax=U0/Ia, Ik=U0/Zs;
+  const ok=Zs<=Zmax, Lmax=(Zmax-z0)/Math.sqrt(a*a+b*b);
+  setOut('l_out',
+    row('Impedance vedení',fmt(Zc,3)+' Ω')+
+    row('Zs celkem',fmt(Zs,3)+' Ω '+badge(ok?'ok':'bad',ok?'vyhovuje':'nevyhovuje'),'big')+
+    row('Zs,max = U₀/Ia (Ia = '+fmt(Ia,0)+' A)',fmt(Zmax,3)+' Ω')+
+    row('Zs,max pro měření (× 2/3)',fmt(Zmax*2/3,3)+' Ω')+
+    row('Zkratový proud na konci',fmt(Ik,0)+' A')+
+    row('Max. délka při těchto průřezech',Lmax>0?fmt(Lmax,0)+' m':'– (Zs₀ je už příliš velká)'));
+}
+
+function calcPower(){
+  const sys=$('p_sys').value, mode=$('p_mode').value, U=nv('p_u'), cos=nv('p_cos'), v=nv('p_val');
+  if(!need(U,cos,v)||cos<=0||cos>1||U<=0||v<=0){setOut('p_out',bad('Vyplň platné hodnoty.'));return;}
+  const k=sys==='1'?1:Math.sqrt(3);
+  let P,I; if(mode==='P'){P=v;I=P*1000/(k*U*cos);}else{I=v;P=k*U*I*cos/1000;}
+  const S=k*U*I/1000, Q=Math.sqrt(Math.max(S*S-P*P,0));
+  setOut('p_out',row('Proud I',fmt(I)+' A','big')+row('Činný výkon P',fmt(P)+' kW')+row('Zdánlivý výkon S',fmt(S)+' kVA')+row('Jalový výkon Q',fmt(Q)+' kvar'));
+}
+
+function calcComp(){
+  const P=nv('k_p'), c1=nv('k_c1'), c2=nv('k_c2');
+  if(!need(P,c1,c2)||c1<=0||c1>1||c2<=0||c2>1){setOut('k_out',bad('cos φ zadej v rozsahu 0–1.'));return;}
+  const t=c=>Math.tan(Math.acos(c)); const Qc=P*(t(c1)-t(c2));
+  setOut('k_out',row('Potřebný kompenzační výkon',fmt(Qc)+' kvar','big')+(Qc<0?note('Cílový cos φ je horší než stávající, kompenzace není potřeba.'):''));
+}
+
+function addLoad(name='',p='',n='1',b='1'){
+  const d=document.createElement('div'); d.className='lr';
+  d.innerHTML=`<input class="ln" value="${name}" placeholder="název"><input class="lp" inputmode="decimal" value="${p}"><input class="lk" inputmode="decimal" value="${n}"><input class="lb" inputmode="decimal" value="${b}"><button class="act" type="button" title="Odebrat">×</button>`;
+  d.querySelector('button').onclick=()=>{d.remove();calcBilance();};
+  $('b_rows').appendChild(d);
+}
+function calcBilance(){
+  let Pi=0,Ps=0;
+  document.querySelectorAll('#b_rows .lr').forEach(r=>{
+    const g=c=>parseFloat(r.querySelector(c).value.replace(',','.'))||0;
+    const p=g('.lp')*g('.lk'); Pi+=p; Ps+=p*g('.lb');
+  });
+  const cos=nv('b_cos'), res=nv('b_res')||0;
+  if(!need(cos)||cos<=0||cos>1){setOut('b_out',bad('cos φ zadej v rozsahu 0–1.'));return;}
+  const I=Ps*1000/(Math.sqrt(3)*400*cos), Ir=I*(1+res/100), In=nextStd(Ir);
+  setOut('b_out',row('Instalovaný příkon',fmt(Pi)+' kW')+row('Soudobý příkon',fmt(Ps)+' kW')+
+    row('Soudobý proud (3f 400 V)',fmt(I)+' A')+row('Proud s rezervou',fmt(Ir)+' A')+
+    row('Hlavní jistič (min.)',In?In+' A':'> 630 A','big'));
+}
+
+/* ---------- FVE ---------- */
+function calcString(){
+  const g=nv, Voc=g('s_voc'),Vmp=g('s_vmp'),Isc=g('s_isc'),Imp=g('s_imp'),Pm=g('s_pm'),tkv=g('s_tkv'),tkm=g('s_tkm');
+  const Vdc=g('s_vdc'),Vlo=g('s_vlo'),Vhi=g('s_vhi'),Imax=g('s_imax'),Iscmax=g('s_iscmax'),nM=g('s_nm'),Pac=g('s_pac');
+  const Tmin=g('s_tmin'),Tcell=g('s_tcell'),N=g('s_n'),par=g('s_par'),used=g('s_used');
+  if(!need(Voc,Vmp,Isc,Imp,Pm,tkv,tkm,Vdc,Vlo,Vhi,Imax,Iscmax,nM,Pac,Tmin,Tcell,N,par,used)){setOut('s_out',bad('Vyplň všechny hodnoty.'));return;}
+  const VocC=Voc*(1+tkv/100*(Tmin-25)), VmpH=Vmp*(1+tkm/100*(Tcell-25)), VmpC=Vmp*(1+tkm/100*(Tmin-25));
+  const nSafe=Math.floor(Vdc/VocC), nMppt=Math.floor(Vhi/VmpC), nMin=Math.ceil(Vlo/VmpH);
+  const nMax=Math.min(nSafe,nMppt);
+  const chk=[];
+  const cV=N*VocC<=Vdc; chk.push(['Voc za mrazu ≤ max. DC napětí',fmt(N*VocC,0)+' V / '+Vdc+' V',cV?'ok':'bad']);
+  const cLo=N*VmpH>=Vlo; chk.push(['Vmpp za tepla ≥ dolní mez MPPT',fmt(N*VmpH,0)+' V / '+Vlo+' V',cLo?'ok':'bad']);
+  const cHi=N*VmpC<=Vhi; chk.push(['Vmpp za mrazu ≤ horní mez MPPT',fmt(N*VmpC,0)+' V / '+Vhi+' V',cHi?'ok':'warn']);
+  const cI=Imp*par<=Imax; chk.push(['Impp × řetězce ≤ max. proud MPPT',fmt(Imp*par,1)+' A / '+Imax+' A',cI?'ok':'warn']);
+  const cIsc=Isc*par<=Iscmax; chk.push(['Isc × řetězce ≤ max. Isc MPPT',fmt(Isc*par,1)+' A / '+Iscmax+' A',cIsc?'ok':'bad']);
+  const cM=used<=nM; chk.push(['Využité MPPT ≤ počet MPPT',used+' / '+nM,cM?'ok':'bad']);
+  const mod=N*par*used, Pdc=mod*Pm/1000, ratio=Pdc/Pac;
+  const rb=ratio<0.9?'warn':ratio<=1.3?'ok':ratio<=1.5?'warn':'bad';
+  const rt=ratio<0.9?'nízký (střídač předimenzován)':ratio<=1.3?'v pořádku':ratio<=1.5?'vysoké (ořezávání špiček)':'příliš vysoké';
+  let h=row('Voc při '+Tmin+' °C',fmt(VocC,1)+' V')+row('Vmpp při '+Tcell+' °C',fmt(VmpH,1)+' V')+row('Vmpp při '+Tmin+' °C',fmt(VmpC,1)+' V');
+  h+=row('Počet panelů v řetězci',nMin<=nMax?`${nMin} až ${nMax}`:'žádná vyhovující délka','big');
+  h+=note(`Max. z hlediska napětí (bezpečnost): ${nSafe}; horní mez MPPT: ${nMppt}; min. pro MPPT: ${nMin}.`);
+  h+=chk.map(c=>row(c[0],c[1]+' '+badge(c[2],c[2]==='ok'?'OK':c[2]==='warn'?'pozor':'chyba'))).join('');
+  h+=row('Panelů celkem',fmt(mod,0))+row('DC výkon',fmt(Pdc)+' kWp')+row('Poměr DC/AC',fmt(ratio)+' '+badge(rb,rt));
+  setOut('s_out',h);
+}
+
+function calcDC(){
+  const I=nv('dc_i'),U=nv('dc_u'),L=nv('dc_l'),S=parseFloat($('dc_s').value),T=nv('dc_t');
+  if(!need(I,U,L,T)||I<=0||U<=0||L<=0){setOut('dc_out',bad('Vyplň kladné hodnoty.'));return;}
+  const R=rho('Cu',T)*2*L/S, dU=I*R, pct=dU/U*100, Pl=I*I*R, P=U*I;
+  const minS=[2.5,4,6,10,16,25].find(s=>I*rho('Cu',T)*2*L/s/U*100<=1);
+  setOut('dc_out',row('Úbytek napětí',fmt(dU)+' V')+row('Úbytek',fmt(pct)+' % '+badge(pct<=1?'ok':pct<=2?'warn':'bad',pct<=1?'dobré':pct<=2?'hraniční':'vysoké'),'big')+
+    row('Ztráty výkonu',fmt(Pl,0)+' W ('+fmt(Pl/P*100)+' % výkonu řetězce)')+row('Min. průřez pro ≤ 1 %',minS?minS+' mm²':'> 25 mm²'));
+}
+
+function calcFuse(){
+  const Isc=nv('fu_isc'),mx=nv('fu_max'),n=nv('fu_n'),P=nv('ac_p'),ph=$('ac_ph').value;
+  if(!need(Isc,mx,n,P)||Isc<=0||P<=0){setOut('fu_out',bad('Vyplň platné hodnoty.'));return;}
+  const FU=[10,12,15,16,20,25,30,32,40];
+  const lo=1.56*Isc, f=FU.find(x=>x>=lo);
+  const need_=(n-1)*Isc>mx;
+  let h=row('Min. pojistka řetězce (1,56·Isc)',fmt(lo,1)+' A');
+  h+=row('Doporučená gPV pojistka',f?(f<=mx?f+' A '+badge('ok','OK'):f+' A '+badge('bad','> max. modulu')):'– ');
+  h+=row('Pojistky řetězců nutné?',need_?badge('warn','ano — (n−1)·Isc > max. pojistka'):badge('ok','ne — zpětný proud nepřekročí limit modulu'));
+  const k=ph==='3'?Math.sqrt(3)*400:230, Iac=P*1000/k, Ib=Iac*1.1;
+  h+=row('Jmenovitý AC proud',fmt(Iac,1)+' A')+row('Jistič AC (≥ 1,1·In)',nextStd(Ib)+' A','big');
+  const idx=SIZES.findIndex((s,i)=>AMP.XLPE.C[ph==='3'?3:2][i]>=nextStd(Ib));
+  h+=row('Min. průřez Cu (XLPE, uložení C, 30 °C)',idx>=0?SIZES[idx]+' mm²':'> 120 mm²');
+  h+=note('Úbytek napětí na AC přívodu ověřte zvlášť (doporučeno ≤ 1–2 % kvůli omezení výkonu střídače při vysokém napětí v síti).');
+  setOut('fu_out',h);
+}
+
+function calcYield(){
+  const kwp=nv('y_kwp'),ref=nv('y_ref'),or=parseFloat($('y_or').value),deg=nv('y_deg'),inv=nv('y_inv'),sc=nv('y_sc')/100,buy=nv('y_buy'),ex=nv('y_exp'),g=nv('y_g')/100;
+  if(!need(kwp,ref,deg,inv,sc,buy,ex,g)||kwp<=0){setOut('y_out',bad('Vyplň všechny hodnoty.'));return;}
+  const Y=kwp*ref*or;
+  const sv=(y)=>{const yy=Y*Math.pow(1-deg/100,y-1);return yy*sc*buy*Math.pow(1+g,y-1)+yy*(1-sc)*ex;};
+  let cum=0,payback=null,total25=0;
+  for(let y=1;y<=40;y++){const s=sv(y);const prev=cum;cum+=s;if(y<=25)total25+=s;if(payback===null&&cum>=inv){payback=y-1+(inv-prev)/s;}}
+  const s1=sv(1);
+  setOut('y_out',row('Roční výroba (1. rok)',fmt(Y,0)+' kWh','big')+row('Měrný výnos',fmt(ref*or,0)+' kWh/kWp')+
+    row('Úspora / příjem 1. rok',fmt(s1,0))+row('Prostá návratnost',s1>0?fmt(inv/s1,1)+' let':'–')+
+    row('Návratnost s růstem cen a degradací',payback?fmt(payback,1)+' let':'> 40 let','big')+row('Celkem za 25 let',fmt(total25,0)));
+}
+
+function calcBat(){
+  const E=nv('bt_e'),d=nv('bt_d'),dod=nv('bt_dod')/100,eta=nv('bt_eta')/100,P=nv('bt_p'),V=nv('bt_v');
+  if(!need(E,d,dod,eta,P,V)||dod<=0||eta<=0||V<=0){setOut('bt_out',bad('Vyplň platné hodnoty.'));return;}
+  const use=E*d, nom=use/(dod*eta);
+  setOut('bt_out',row('Využitelná kapacita',fmt(use)+' kWh')+row('Jmenovitá kapacita baterie',fmt(nom)+' kWh','big')+
+    row('Proud při špičce',fmt(P*1000/V,0)+' A')+row('C-rate při špičce',fmt(P/nom,2)+' C'));
+}
+
+function calcRows(){
+  const lat=nv('r_lat'),L=nv('r_l'),b=nv('r_b');
+  if(!need(lat,L,b)||L<=0){setOut('r_out',bad('Vyplň platné hodnoty.'));return;}
+  const h=90-lat-23.44;
+  if(h<=0){setOut('r_out',bad('Slunce v zimním slunovratu nevystoupá nad obzor, použijte jiný postup.'));return;}
+  const rad=Math.PI/180, height=L*Math.sin(b*rad), d=L*Math.cos(b*rad)+height/Math.tan(h*rad);
+  setOut('r_out',row('Výška Slunce 21. 12. v poledne',fmt(h,1)+' °')+row('Výška hrany panelu',fmt(height)+' m')+row('Rozteč řad (hrana–hrana)',fmt(d)+' m','big')+row('Mezera mezi řadami',fmt(d-L*Math.cos(b*rad))+' m'));
+}
+
+/* ---------- MaR ---------- */
+function calcScale(e){
+  const [sl,sh,unit]=$('m_type').value.split(',');const lo=nv('m_lo'),hi=nv('m_hi'),a=+sl,b=+sh;
+  $('m_sig_u').textContent=unit;
+  if(!need(lo,hi)||hi===lo){setOut('m_out',bad('Zadej rozsah (od ≠ do).'));return;}
+  let sig,val;
+  if(e&&e.target&&e.target.id==='m_val'){val=nv('m_val');if(!need(val))return;sig=a+(val-lo)/(hi-lo)*(b-a);$('m_sig').value=rd(sig,3);}
+  else{sig=nv('m_sig');if(!need(sig))return;val=lo+(sig-a)/(b-a)*(hi-lo);$('m_val').value=rd(val,3);}
+  const frac=(sig-a)/(b-a);
+  let h=row('Hodnota',fmt(val,3),'big')+row('Signál',fmt(sig,3)+' '+unit)+row('% rozsahu',fmt(frac*100,1)+' %')+
+    row('Siemens normalizované (0–27648)',fmt(Math.round(sig/b*27648),0))+row('12bit ADC (0–4095)',fmt(Math.round(sig/b*4095),0));
+  if(unit==='mA'&&a===4){
+    if(sig<3.8)h+=row('Stav',badge('bad','pod 3,8 mA: porucha / přerušený vodič'));
+    else if(sig>20.5)h+=row('Stav',badge('bad','nad 20,5 mA: přetížení'));
+    else h+=row('Stav',badge('ok','v pásmu'));
+  }
+  setOut('m_out',h);
+}
+
+const pt=(R0,T)=>{const A=3.9083e-3,B=-5.775e-7,C=-4.183e-12;return T>=0?R0*(1+A*T+B*T*T):R0*(1+A*T+B*T*T+C*(T-100)*T**3);};
+function sensor(type){
+  if(type==='pt100')return{R:T=>pt(100,T),lo:-200,hi:850,n:'Pt100'};
+  if(type==='pt1000')return{R:T=>pt(1000,T),lo:-200,hi:850,n:'Pt1000'};
+  if(type==='ni1000')return{R:T=>1000*(1+5.485e-3*T+6.65e-6*T*T+2.805e-11*T**4-2e-17*T**6),lo:-60,hi:250,n:'Ni1000'};
+  const B=nv('t_b'),R25=nv('t_r25');
+  return{R:T=>R25*Math.exp(B*(1/(T+273.15)-1/298.15)),lo:-50,hi:150,n:'NTC'};
+}
+function invert(fn,R,lo,hi){
+  const fa=fn(lo),fb=fn(hi),inc=fb>fa;
+  if(R<Math.min(fa,fb)||R>Math.max(fa,fb))return NaN;
+  let a=lo,b=hi;
+  for(let i=0;i<100;i++){const m=(a+b)/2;if((fn(m)<R)===inc)a=m;else b=m;}
+  return (a+b)/2;
+}
+function calcRTD(e){
+  const type=$('t_type').value,s=sensor(type);
+  if(type==='ntc'&&!need(nv('t_b'),nv('t_r25'))){setOut('t_out',bad('Zadej β a R25.'));return;}
+  let T,R;
+  if(e&&e.target&&e.target.id==='t_r'){R=nv('t_r');if(!need(R))return;T=invert(s.R,R,s.lo,s.hi);if(Number.isFinite(T))$('t_t').value=rd(T,2);}
+  else{T=nv('t_t');if(!need(T))return;R=s.R(T);$('t_r').value=rd(R,3);}
+  if(!Number.isFinite(T)||T<s.lo||T>s.hi){setOut('t_out',bad(`Mimo rozsah tabulky čidla (${s.lo} až ${s.hi} °C).`));return;}
+  const sens=(s.R(T+0.5)-s.R(T-0.5));
+  let h=row('Teplota',fmt(T,2)+' °C','big')+row('Odpor',fmt(R,3)+' Ω')+row('Citlivost',fmt(sens,type==='pt1000'||type==='ni1000'?2:3)+' Ω/K');
+  if(type.startsWith('pt')){h+=row('Tolerance třída A',`± ${fmt(0.15+0.002*Math.abs(T),2)} K`)+row('Tolerance třída B',`± ${fmt(0.30+0.005*Math.abs(T),2)} K`);}
+  setOut('t_out',h);
+}
+
+function calcWire(){
+  const type=$('w_type').value,L=nv('w_l'),S=nv('w_s'),T=nv('w_t');
+  if(!need(L,S,T)||S<=0||L<0){setOut('w_out',bad('Vyplň platné hodnoty.'));return;}
+  const s=sensor(type),R=2*rho('Cu',20)*L/S,sens=s.R(T+0.5)-s.R(T-0.5);
+  const err=R/sens;
+  setOut('w_out',row('Odpor smyčky kabelu',fmt(R,3)+' Ω')+row('Chyba měření',`+${fmt(err,2)} K`,'big')+
+    row('Hodnocení',badge(err<0.5?'ok':err<2?'warn':'bad',err<0.5?'zanedbatelná':err<2?'kompenzovat v SW':'použít 3/4-vodič'))+
+    note('Chyba je kladná (měřená teplota vychází vyšší). Kompenzovat lze odečtením R kabelu v PLC.'));
+}
+
+function calcLoopI(){
+  const Vs=nv('i_vs'),Vm=nv('i_vmin'),Rl=nv('i_rl'),L=nv('i_l'),S=nv('i_s');
+  if(!need(Vs,Vm,Rl,L,S)||S<=0){setOut('i_out',bad('Vyplň platné hodnoty.'));return;}
+  const Rc=2*rho('Cu',20)*L/S, Rmax=(Vs-Vm)/0.022, Rtot=Rl+Rc, Vtx=Vs-0.022*Rtot;
+  const ok=Vtx>=Vm;
+  setOut('i_out',row('Odpor kabelu (tam a zpět)',fmt(Rc,1)+' Ω')+row('Max. celkový odpor smyčky (22 mA)',fmt(Rmax,0)+' Ω')+
+    row('Rezerva',fmt(Rmax-Rtot,0)+' Ω '+badge(ok?'ok':'bad',ok?'vyhovuje':'nedostatečné napájení'),'big')+
+    row('Napětí na vysílači při 22 mA',fmt(Vtx,2)+' V (min. '+fmt(Vm,1)+' V)'));
+}
+
+function calcPID(){
+  const m=$('z_m').value,a=nv('z_a'),b=nv('z_b'),c=nv('z_c');
+  if(!need(a,b)||a<=0||b<=0||(m==='step'&&(!need(c)||c<=0))){setOut('z_out',bad('Vyplň kladné hodnoty.'));return;}
+  let rows;
+  if(m==='osc')rows=[['P',0.5*a,null,null],['PI',0.45*a,b/1.2,null],['PID',0.6*a,0.5*b,0.125*b]];
+  else{const K=a,L=b,T=c;rows=[['P',T/(K*L),null,null],['PI',0.9*T/(K*L),3.33*L,null],['PID',1.2*T/(K*L),2*L,0.5*L]];}
+  setOut('z_out',`<div class="scroll"><table><tr><th>Reg.</th><th class="n">Kp</th><th class="n">Ti (s)</th><th class="n">Td (s)</th></tr>`+
+    rows.map(r=>`<tr><td>${r[0]}</td><td class="n">${fmt(r[1],3)}</td><td class="n">${r[2]?fmt(r[2],1):'–'}</td><td class="n">${r[3]?fmt(r[3],1):'–'}</td></tr>`).join('')+`</table></div>`);
+}
+
+function calcFlow(){
+  const P=nv('q_p'),dt=nv('q_dt'),d=nv('q_d');
+  if(!need(P,dt,d)||dt<=0||P<=0||d<=0){setOut('q_out',bad('Vyplň kladné hodnoty.'));return;}
+  const Q=P/(1.163*dt), v=(Q/3600)/(Math.PI/4*(d/1000)**2);
+  setOut('q_out',row('Průtok',fmt(Q,3)+' m³/h','big')+row('Průtok',fmt(Q*1000,0)+' l/h = '+fmt(Q/3.6,3)+' l/s')+
+    row('Rychlost v potrubí',fmt(v,2)+' m/s '+badge(v<=1?'ok':v<=1.5?'warn':'bad',v<=1?'v pořádku':v<=1.5?'vyšší':'příliš vysoká')));
+}
+
+function calcKv(){
+  const Q=nv('kv_q'),dp=nv('kv_dp'),rest=nv('kv_rest');
+  if(!need(Q,dp,rest)||Q<=0||dp<=0||rest<0){setOut('kv_out',bad('Vyplň kladné hodnoty.'));return;}
+  const kv=Q/Math.sqrt(dp/100), beta=dp/(dp+rest);
+  setOut('kv_out',row('Potřebné Kv',fmt(kv,2)+' m³/h','big')+row('Autorita β',fmt(beta,2)+' '+badge(beta>=0.3?'ok':'warn',beta>=0.3?'v pořádku':'nízká (< 0,3)')));
+}
+
+/* ---------- TABULKY ---------- */
+function calcFrom(){
+  const v=nv('u_v'),u=$('u_u').value;
+  if(!need(v)){setOut('u_out',bad('Zadej číslo.'));return;}
+  const W={W:1,kW:1e3,MW:1e6,hpm:735.49875,hp:745.69987,btu:0.29307107,kcal:1.163,rt:3516.85};
+  const w=v*W[u];
+  setOut('u_out',[['W','W'],['kW','kW'],['MW','MW'],['hpm','k (metr.)'],['hp','hp (mech.)'],['btu','BTU/h'],['kcal','kcal/h'],['rt','RT']].map(([k,t])=>row(t,fmt(w/W[k],4))).join(''));
+}
+function calcSizeTable(){
+  const base=AMP.PVC.C[3];
+  setOut('st_out',`<table><tr><th>mm²</th><th class="n">Iz (A)</th><th class="n">max In (A)</th></tr>`+SIZES.map((s,i)=>{
+    const mx=STD_IN.filter(x=>x<=base[i]).pop();return `<tr><td>${s}</td><td class="n">${base[i]}</td><td class="n">${mx||'–'}</td></tr>`}).join('')+`</table>`);
+}
+function buildAwg(){
+  const list=[24,22,20,18,16,14,12,10,8,6,4,2,1,0,-1,-2,-3];
+  const name=n=>n>0?String(n):(n===0?'1/0':`${1-n}/0`);
+  $('awg_out').innerHTML=`<table><tr><th>AWG</th><th class="n">Ø (mm)</th><th class="n">mm²</th></tr>`+list.map(n=>{
+    const dm=0.127*Math.pow(92,(36-n)/39), a=Math.PI/4*dm*dm;
+    return `<tr><td>${name(n)}</td><td class="n">${fmt(dm,2)}</td><td class="n">${fmt(a,2)}</td></tr>`}).join('')+`</table>`;
+}
+
+/* ---------- CHECKLISTY ---------- */
+const CHECKS=[
+ {id:'rev',t:'Výchozí revize / kontrola elektroinstalace',items:[
+  'Dokumentace (projekt, schémata, protokol o určení vnějších vlivů) je k dispozici',
+  'Rozváděč a jističe jsou označeny, obvody odpovídají schématu',
+  'Barvy a označení vodičů (PE, N, L) jsou správně, PE je nepřerušený',
+  'Utažení svorek, kontrola vodičů ve svorkách, zaslepení volných otvorů',
+  'Průřezy vodičů a jištění odpovídají zatížení (Ib ≤ In ≤ Iz)',
+  'Hlavní ochranné pospojování a doplňující pospojování (koupelny aj.)',
+  'Odpor uzemnění / ověření připojení na uzemňovací soustavu',
+  'Izolační odpor 500 V DC (≥ 1 MΩ) změřen a zapsán',
+  'Impedance smyčky Zs změřena a porovnána s limity jističů',
+  'RCD: vybavovací proud a doba změřeny, tlačítko TEST funguje',
+  'Sled fází a funkce zásuvek / spotřebičů ověřena',
+  'Krytí a označení rozváděče (výstražné štítky, štítek s údaji)',
+  'Protokol o revizi vyhotoven a předán']},
+ {id:'fve',t:'FVE — uvedení do provozu (ČSN EN 62446-1)',items:[
+  'Mechanická kontrola: uchycení, utažení, rozestupy, poškození panelů',
+  'Polarita každého řetězce ověřena před připojením ke střídači',
+  'Napětí Voc každého řetězce změřeno a porovnáno s výpočtem',
+  'Isc (nebo provozní proud) řetězců změřen při stabilním ozáření',
+  'Izolační odpor DC polí změřen (zkušební napětí dle Voc: <120 V → 250 V, 120–500 V → 500 V, >500 V → 1000 V)',
+  'Pospojování a uzemnění rámů a konstrukce, kontinuita PE',
+  'Hromosvod / SPD typ dle projektu (DC i AC), vzdálenosti dodrženy',
+  'DC odpínač, pojistky, AC jistič a RCD správně osazeny',
+  'Označení: výstražné štítky DC, schéma, kontakt, označení pro hasiče',
+  'Nastavení střídače: země / síťový kód, limity U, f, cos φ, omezení exportu',
+  'Funkce anti-islanding, přepnutí při výpadku sítě (u hybridů záloha)',
+  'Komunikace a monitoring (Wi-Fi/LAN/RS485), přístupy předány zákazníkovi',
+  'Měřič / měření toků (elektroměr, CT) správně orientováno',
+  'Fotodokumentace, protokol, revizní zpráva dle ČSN 33 2000-6 a 7-712']},
+ {id:'mar',t:'MaR — oživení smyček a regulace',items:[
+  'Zapojení zkontrolováno dle schématu, svorky popsány, stínění uzemněno',
+  'Napájení 24 V ověřeno (napětí pod zátěží, polarita, jištění)',
+  'Analogové vstupy: simulace 4 / 12 / 20 mA, kontrola škálování v PLC',
+  'Poruchové stavy (< 3,8 mA, přerušení vodiče) vyvolávají alarm',
+  'Teplotní čidla porovnána s referenčním teploměrem',
+  'Aktory: směr, doba chodu, 0–100 %, koncové polohy, poloha při poruše',
+  'Binární vstupy / výstupy: test každého bodu (I/O check)',
+  'Komunikace: adresy, rychlost, parita, zakončení RS-485 120 Ω',
+  'Regulátory: PID nastaveny, kontrola stability, omezení výstupu a anti-windup',
+  'Alarmy a limity nastaveny, ověřen jejich akustický / vizuální signál',
+  'Bezpečnostní funkce (protimrazová ochrana, havarijní vypnutí) otestovány',
+  'Program zálohován, verze zaznamenána, dokumentace aktualizována']}
+];
+function loadState(){try{return JSON.parse(localStorage.getItem('elek_chk')||'{}');}catch(e){return {};}}
+function saveState(s){try{localStorage.setItem('elek_chk',JSON.stringify(s));}catch(e){}}
+function buildChecks(){
+  const st=loadState();
+  $('chkGrid').innerHTML=CHECKS.map(c=>`<article class="card" data-cl="${c.id}"><h3>${c.t}</h3><div class="prog"></div>`+
+    c.items.map((t,i)=>`<label class="chk${st[c.id+i]?' done':''}"><input type="checkbox" data-k="${c.id+i}"${st[c.id+i]?' checked':''}><span>${t}</span></label>`).join('')+`</article>`).join('');
+  updProg();
+}
+function updProg(){
+  document.querySelectorAll('[data-cl]').forEach(card=>{
+    const all=card.querySelectorAll('input'),done=[...all].filter(i=>i.checked).length;
+    card.querySelector('.prog').textContent=`Splněno ${done} z ${all.length}`;
+  });
+}
+$('chkGrid').addEventListener('change',e=>{
+  if(e.target.dataset.k===undefined)return;
+  const st=loadState();st[e.target.dataset.k]=e.target.checked;saveState(st);
+  e.target.closest('.chk').classList.toggle('done',e.target.checked);updProg();
+});
+$('chkReset').onclick=()=>{if(confirm('Vynulovat všechny checklisty?')){saveState({});buildChecks();}};
+
+/* ---------- záložky a start ---------- */
+function showTab(id){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('on',t.id==='t-'+id));
+  document.querySelectorAll('#tabs button').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.tab===id)));
+  try{localStorage.setItem('elek_tab',id);}catch(e){}
+}
+document.querySelectorAll('#tabs button').forEach(b=>b.onclick=()=>showTab(b.dataset.tab));
+
+[['Osvětlení',3,1,0.8],['Zásuvky',6,1,0.5],['Tepelné čerpadlo',5,1,1],['Indukční varná deska',7,1,0.5],['Wallbox',11,1,0.6]].forEach(r=>addLoad(...r));
+$('b_add').onclick=()=>{addLoad('',"",'1','1');};
+buildAwg();buildChecks();
+document.querySelectorAll('[data-calc]').forEach(el=>{
+  const h=e=>window[el.dataset.calc](e);
+  el.addEventListener('input',h);el.addEventListener('change',h);
+});
+['calcDrop','calcCable','calcLoop','calcPower','calcComp','calcBilance','calcString','calcDC','calcFuse','calcYield','calcBat','calcRows',
+ 'calcScale','calcRTD','calcWire','calcLoopI','calcPID','calcFlow','calcKv','calcFrom','calcSizeTable'].forEach(f=>window[f]());
+try{const t=localStorage.getItem('elek_tab');if(t&&document.getElementById('t-'+t))showTab(t);}catch(e){}
+</script>
+</body>
+</html>
