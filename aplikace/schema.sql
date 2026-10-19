@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS diary(
 CREATE TABLE IF NOT EXISTS photos(
   id INTEGER PRIMARY KEY, job_id INTEGER NOT NULL REFERENCES jobs(id),
   entry_id INTEGER REFERENCES diary(id), filename TEXT NOT NULL, caption TEXT DEFAULT '',
-  phase TEXT DEFAULT 'behem', area TEXT DEFAULT '', taken TEXT);
+  phase TEXT DEFAULT 'behem', area TEXT DEFAULT '', taken TEXT, src_hash TEXT);
 CREATE TABLE IF NOT EXISTS items(
   id INTEGER PRIMARY KEY, name TEXT NOT NULL, unit TEXT NOT NULL DEFAULT 'ks',
   buy_czk REAL DEFAULT 0, buy_eur REAL DEFAULT 0, sell_czk REAL DEFAULT 0, sell_eur REAL DEFAULT 0);

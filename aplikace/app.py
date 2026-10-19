@@ -55,6 +55,8 @@ def close_db(_):
 def init_db():
     with sqlite3.connect(os.path.join(DATA, "denik.db")) as c:
         c.executescript(open(os.path.join(BASE, "schema.sql"), encoding="utf-8").read())
+        if "src_hash" not in [r[1] for r in c.execute("PRAGMA table_info(photos)")]:
+            c.execute("ALTER TABLE photos ADD COLUMN src_hash TEXT")
 
 
 def q(sql, *a):
@@ -386,6 +388,21 @@ def gallery(jid):
     else:
         rows = q("SELECT * FROM photos WHERE job_id=? ORDER BY taken DESC, id DESC", jid)
     return render_template("gallery.html", j=j, photos=rows, ph=ph)
+
+
+@app.route("/jobs/<int:jid>/captions", methods=["GET", "POST"])
+@login_required()
+def captions(jid):
+    j = job_or_404(jid)
+    if request.method == "POST":
+        for pid in request.form.getlist("pid"):
+            ph = request.form.get(f"phase_{pid}")
+            ex("UPDATE photos SET caption=?, area=?, phase=? WHERE id=? AND job_id=?",
+               request.form.get(f"caption_{pid}", ""), request.form.get(f"area_{pid}", ""),
+               ph if ph in PHASES else "behem", pid, jid)
+        flash("Popisky uloženy.")
+        return redirect(url_for("captions", jid=jid))
+    return render_template("captions.html", j=j, photos=q("SELECT * FROM photos WHERE job_id=? ORDER BY taken, id", jid))
 
 
 @app.post("/photos/<int:pid>/delete")

@@ -5,6 +5,7 @@
 <div class="tabs">
   <a class="btn" href="{{ url_for('diary_new', jid=j.id) }}">+ Zápis do deníku</a>
   <a class="btn alt" href="{{ url_for('gallery', jid=j.id) }}">Fotky</a>
+  <a class="btn alt" href="{{ url_for('captions', jid=j.id) }}">Popisky fotek</a>
   <a class="btn alt" href="{{ url_for('material', jid=j.id) }}">Materiál</a>
   <a class="btn alt" href="{{ url_for('stages', jid=j.id) }}">Pokrok</a>
   <a class="btn alt" href="{{ url_for('report', jid=j.id) }}">Tisk deníku</a>
