@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% block body %}
+<h1>Nový zápis · {{ j.name }}</h1>
+<form method="post" enctype="multipart/form-data" class="card"><input type="hidden" name="csrf" value="{{ csrf }}">
+<div class="grid3"><label>Datum<input type="date" name="date" value="{{ today }}" required></label>
+<label>Počasí<select name="weather">{% for w in WEATHER %}<option>{{ w }}</option>{% endfor %}</select></label>
+<label>Počet lidí<input name="workers" inputmode="numeric"></label></div>
+<label>Odpracováno hodin<input name="hours" inputmode="decimal"></label>
+<label>Provedené práce<textarea name="work_done" rows="4" required></textarea></label>
+<label>Problémy / překážky<textarea name="issues" rows="2"></textarea></label>
+<h3>Fotografie</h3>
+<label>Vybrat / vyfotit<input type="file" name="photos" accept="image/*" multiple></label>
+<div class="grid3"><label>Fáze<select name="phase">{% for k,v in PHASES.items() %}<option value="{{ k }}" {{ 'selected' if k=='behem' }}>{{ v }}</option>{% endfor %}</select></label>
+<label>Místo / podlaží<input name="area"></label><label>Popis fotek<input name="caption"></label></div>
+<h3>Použitý materiál</h3>
+<div id="mat">
+{% for i in range(3) %}<div class="grid2"><select name="item_id"><option value="">—</option>{% for it in items %}<option value="{{ it.id }}">{{ it.name }} ({{ it.unit }})</option>{% endfor %}</select><input name="item_qty" inputmode="decimal" placeholder="množství"></div>{% endfor %}
+</div>
+<button class="btn">Uložit zápis</button></form>
+{% endblock %}

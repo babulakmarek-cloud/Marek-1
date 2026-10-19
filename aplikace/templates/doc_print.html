@@ -1,0 +1,29 @@
+<!doctype html><html lang="{{ 'de' if c.country=='DE' else 'cs' }}"><head><meta charset="utf-8"><title>{{ d.number }}</title>
+<style>body{font:14px/1.4 Arial,sans-serif;margin:24px auto;max-width:800px;color:#111}table{width:100%;border-collapse:collapse}th,td{padding:6px;border-bottom:1px solid #ccc;text-align:left}.r{text-align:right}.cols{display:flex;gap:40px;margin:20px 0}.cols>div{flex:1;white-space:pre-line}h1{margin:0}.tot{font-size:18px}@media print{.np{display:none}}</style></head><body>
+{% set de = c.country=='DE' %}
+<p class="np"><a href="#" onclick="window.print();return false">Tisk / uložit jako PDF</a></p>
+<h1>{{ ('Angebot' if de else 'Nabídka') if d.kind=='quote' else (('Anzahlungsrechnung' if de else 'Zálohová faktura') if d.kind=='advance' else ('Rechnung' if de else 'Faktura – daňový doklad')) }} {{ d.number }}</h1>
+<div class="cols"><div><b>{{ 'Lieferant' if de else 'Dodavatel' }}</b>
+{{ s.company_name }}
+{{ s.company_address }}
+{{ 'IČO' if not de }}{{ ' ' + s.company_ico if s.company_ico }}
+{{ 'DIČ / USt-IdNr.: ' + s.company_dic if s.company_dic }}
+{{ s.company_email }} {{ s.company_phone }}</div>
+<div><b>{{ 'Kunde' if de else 'Odběratel' }}</b>
+{{ c.name }}
+{{ c.address }}
+{{ ('IČO: ' + c.ico) if c.ico }}
+{{ ('DIČ / USt-IdNr.: ' + c.dic) if c.dic }}</div></div>
+<p>{{ 'Ausstellungsdatum' if de else 'Datum vystavení' }}: {{ d.issued|dt }} · {{ ('Gültig bis' if d.kind=='quote' else 'Fällig') if de else ('Platnost do' if d.kind=='quote' else 'Splatnost') }}: {{ d.due|dt }}
+{% if d.kind != 'quote' %}<br>{{ 'Zahlungsreferenz' if de else 'Variabilní symbol' }}: {{ d.number|replace('F','')|replace('Z','') }}{% endif %}
+<br>{{ 'Auftrag' if de else 'Zakázka' }}: {{ j.number }} {{ j.name }}</p>
+<table><tr><th>{{ 'Beschreibung' if de else 'Popis' }}</th><th class="r">{{ 'Menge' if de else 'Množství' }}</th><th class="r">{{ 'Einzelpreis' if de else 'Cena/j.' }}</th><th class="r">{{ 'MwSt' if de else 'DPH' }} %</th><th class="r">{{ 'Summe' if de else 'Celkem' }}</th></tr>
+{% for l in lines %}<tr><td>{{ l.text }}</td><td class="r">{{ l.qty|num }} {{ l.unit }}</td><td class="r">{{ l.price|money(d.currency) }}</td><td class="r">{{ l.vat_rate|num }}</td><td class="r">{{ (l.qty*l.price)|money(d.currency) }}</td></tr>{% endfor %}</table>
+<p class="r">{{ 'Netto' if de else 'Základ daně' }}: {{ base|money(d.currency) }}<br>
+{% for r,v in vat.items() %}{{ 'MwSt' if de else 'DPH' }} {{ r|num }} %: {{ v|money(d.currency) }}<br>{% endfor %}
+<b class="tot">{{ 'Gesamt' if de else 'Celkem k úhradě' }}: {{ total|money(d.currency) }}</b></p>
+{% if d.vat_mode=='rc' %}<p><b>{{ 'Steuerschuldnerschaft des Leistungsempfängers (§ 13b UStG).' if de else 'Daň odvede zákazník (režim přenesení daňové povinnosti, § 92a ZDPH).' }}</b></p>{% endif %}
+{% if d.kind != 'quote' %}<p>{{ 'Bankverbindung' if de else 'Bankovní spojení' }}: IBAN {{ s.iban_czk if d.currency=='CZK' else s.iban_eur }} {{ ('BIC ' + s.bic) if s.bic }}</p>{% endif %}
+{% if d.note %}<p style="white-space:pre-line">{{ d.note }}</p>{% endif %}
+<p style="white-space:pre-line;color:#555">{{ s.footer }}</p>
+</body></html>

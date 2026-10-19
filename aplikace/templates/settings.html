@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% block body %}
+<h1>Údaje firmy (na dokladech)</h1>
+<form method="post" class="card"><input type="hidden" name="csrf" value="{{ csrf }}">
+<label>Název<input name="company_name" value="{{ s.company_name }}"></label>
+<label>Adresa<textarea name="company_address" rows="3">{{ s.company_address }}</textarea></label>
+<div class="grid2"><label>IČO<input name="company_ico" value="{{ s.company_ico }}"></label><label>DIČ / USt-IdNr.<input name="company_dic" value="{{ s.company_dic }}"></label></div>
+<div class="grid2"><label>E-mail<input name="company_email" value="{{ s.company_email }}"></label><label>Telefon<input name="company_phone" value="{{ s.company_phone }}"></label></div>
+<div class="grid3"><label>IBAN (CZK účet)<input name="iban_czk" value="{{ s.iban_czk }}"></label><label>IBAN (EUR účet)<input name="iban_eur" value="{{ s.iban_eur }}"></label><label>BIC/SWIFT<input name="bic" value="{{ s.bic }}"></label></div>
+<label>Patička dokladu<textarea name="footer" rows="2">{{ s.footer }}</textarea></label>
+<button class="btn">Uložit</button></form>
+{% endblock %}

@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block body %}
+<p><a href="{{ url_for('job', jid=j.id) }}">← {{ j.name }}</a></p>
+<h1>Materiál – plán vs. spotřeba</h1>
+<div class="card"><table><tr><th>Položka</th><th class="r">Plán</th><th class="r">Spotřeba</th><th class="r">Zbývá</th><th>Čerpání</th>{% if user.role=='admin' %}<th class="r">Náklad</th>{% endif %}</tr>
+{% for m in mat %}<tr class="{{ 'over' if m.left < 0 }}"><td>{{ m.name }}</td><td class="r">{{ m.plan|num }} {{ m.unit }}</td><td class="r">{{ m.used|num }}</td><td class="r">{{ m.left|num }}</td>
+<td>{% if m.pct is not none %}<div class="bar"><i style="width:{{ [m.pct*100,100]|min|round|int }}%"></i></div>{{ (m.pct*100)|round|int }} %{% endif %}</td>
+{% if user.role=='admin' %}<td class="r">{{ m.cost|money(j.currency) }}</td>{% endif %}</tr>{% else %}<tr><td class="muted">Zatím nic.</td></tr>{% endfor %}</table></div>
+<h2>Zapsat spotřebu</h2>
+<form method="post" class="card"><input type="hidden" name="csrf" value="{{ csrf }}"><div class="grid3">
+<label>Položka<select name="item_id">{% for i in items %}<option value="{{ i.id }}">{{ i.name }}</option>{% endfor %}</select></label>
+<label>Množství<input name="qty" inputmode="decimal" required></label><label>Datum<input type="date" name="date" value="{{ today }}"></label></div><button class="btn">Zapsat</button></form>
+{% if user.role=='admin' %}<h2>Plán materiálu</h2>
+<form method="post" action="{{ url_for('material_plan', jid=j.id) }}" class="card"><input type="hidden" name="csrf" value="{{ csrf }}"><div class="grid2">
+<label>Položka<select name="item_id">{% for i in items %}<option value="{{ i.id }}">{{ i.name }}</option>{% endfor %}</select></label><label>Plánované množství<input name="plan_qty" inputmode="decimal" required></label></div><button class="btn">Uložit plán</button></form>{% endif %}
+<h2>Historie</h2><div class="card"><table>{% for l in log %}<tr><td>{{ l.date|dt }}</td><td>{{ l.name }}</td><td class="r">{{ l.qty|num }} {{ l.unit }}</td></tr>{% endfor %}</table></div>
+{% endblock %}

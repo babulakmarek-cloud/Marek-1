@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+{% block body %}
+<p><a href="{{ url_for('job', jid=j.id) }}">← {{ j.name }}</a></p>
+<h1>Zápis {{ e.date|dt }}</h1>
+<div class="card"><p class="muted">{{ e.weather }} · {{ e.workers }} lidí · {{ e.hours|num }} h · {{ e.author or '' }}</p>
+<h3>Provedené práce</h3><p class="pre">{{ e.work_done }}</p>
+{% if e.issues %}<h3>Problémy</h3><p class="pre">{{ e.issues }}</p>{% endif %}
+{% if use %}<h3>Materiál</h3><ul>{% for u in use %}<li>{{ u.name }}: {{ u.qty|num }} {{ u.unit }}</li>{% endfor %}</ul>{% endif %}</div>
+<div class="photos">{% for p in photos %}<figure><a href="{{ url_for('upload', fn=p.filename) }}"><img src="{{ url_for('upload', fn=p.filename) }}" loading="lazy" alt=""></a><figcaption>{{ PHASES[p.phase] }} {{ p.area }} {{ p.caption }}</figcaption></figure>{% endfor %}</div>
+{% endblock %}

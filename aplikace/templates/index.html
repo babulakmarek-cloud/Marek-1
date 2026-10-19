@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% block body %}
+<div class="row"><h1>Zakázky</h1>{% if user.role == 'admin' %}<a class="btn" href="{{ url_for('job_new') }}">+ Nová zakázka</a>{% endif %}</div>
+{% for j in jobs %}
+<a class="card jobcard" href="{{ url_for('job', jid=j.id) }}">
+  <div class="row"><b>{{ j.number }} · {{ j.name }}</b><span class="tag">{{ STATUS_CZ[j.status] }}</span></div>
+  <div class="muted">{{ j.cust }}{% if j.site_address %} · {{ j.site_address }}{% endif %}</div>
+  <div class="bar"><i style="width:{{ (j.prog*100)|round|int }}%"></i></div>
+  <small>Pokrok {{ (j.prog*100)|round|int }} %</small>
+</a>
+{% else %}<p class="muted">Zatím žádná zakázka.</p>{% endfor %}
+{% endblock %}

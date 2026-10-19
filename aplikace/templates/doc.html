@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block body %}
+<p><a href="{{ url_for('job', jid=j.id) }}">← {{ j.name }}</a></p>
+<div class="row"><h1>{{ KIND_CZ[d.kind] }} {{ d.number }}</h1><a class="btn" href="{{ url_for('doc_print', did=d.id) }}" target="_blank">Náhled / tisk PDF</a></div>
+<form method="post" class="card"><input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="act" value="head">
+<div class="grid3"><label>Vystaveno<input type="date" name="issued" value="{{ d.issued }}"></label><label>Splatnost / platnost<input type="date" name="due" value="{{ d.due or '' }}"></label>
+<label>Stav<select name="status">{% for s in (['koncept','prijata','zamitnuta'] if d.kind=='quote' else ['koncept','odeslano','zaplaceno']) %}<option {{ 'selected' if s==d.status }}>{{ s }}</option>{% endfor %}</select></label></div>
+<label>DPH režim<select name="vat_mode">{% for k,v in VAT.items() %}<option value="{{ k }}" {{ 'selected' if k==d.vat_mode }}>{{ v[0] }}</option>{% endfor %}</select></label>
+<label>Poznámka na dokladu<textarea name="note" rows="2">{{ d.note }}</textarea></label><button class="btn">Uložit hlavičku</button></form>
+<div class="card scroll"><table><tr><th>Text</th><th class="r">Množ.</th><th class="r">Cena/j.</th><th class="r">DPH %</th><th class="r">Celkem</th><th></th></tr>
+{% for l in lines %}<tr><td>{{ l.text }}</td><td class="r">{{ l.qty|num }} {{ l.unit }}</td><td class="r">{{ l.price|money(d.currency) }}</td><td class="r">{{ l.vat_rate|num }}</td><td class="r">{{ (l.qty*l.price)|money(d.currency) }}</td>
+<td><form method="post" class="inline"><input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="act" value="del"><input type="hidden" name="lid" value="{{ l.id }}"><button class="link">×</button></form></td></tr>{% endfor %}
+<tr><td colspan="4" class="r">Základ</td><td class="r">{{ base|money(d.currency) }}</td><td></td></tr>
+{% for r,v in vat.items() %}<tr><td colspan="4" class="r">DPH {{ r|num }} %</td><td class="r">{{ v|money(d.currency) }}</td><td></td></tr>{% endfor %}
+<tr><td colspan="4" class="r"><b>Celkem</b></td><td class="r"><b>{{ total|money(d.currency) }}</b></td><td></td></tr></table></div>
+<h3>Přidat řádek</h3>
+<form method="post" class="card"><input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="act" value="add">
+<label>Z ceníku<select name="item_id"><option value="">— vlastní text —</option>{% for i in items %}<option value="{{ i.id }}">{{ i.name }}</option>{% endfor %}</select></label>
+<div class="grid3"><label>Vlastní text<input name="text"></label><label>Množství<input name="qty" value="1" inputmode="decimal"></label><label>Cena/jedn. ({{ d.currency }})<input name="price" inputmode="decimal"></label></div>
+<button class="btn">Přidat</button></form>
+<div class="tabs">{% if d.kind=='quote' %}<form method="post" action="{{ url_for('to_invoice', did=d.id) }}" class="inline"><input type="hidden" name="csrf" value="{{ csrf }}"><button class="btn alt">Vytvořit fakturu z nabídky</button></form>{% endif %}
+{% if d.status=='koncept' %}<form method="post" class="inline" onsubmit="return confirm('Smazat koncept?')"><input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="act" value="delete"><button class="link">smazat koncept</button></form>{% endif %}</div>
+{% endblock %}

@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% block body %}
+<p class="noprint"><a href="{{ url_for('job', jid=j.id) }}">← zpět</a> · <a href="#" onclick="window.print();return false">Tisk / uložit do PDF</a></p>
+<h1>Stavební deník – {{ j.number }} {{ j.name }}</h1>
+<p>{{ j.cust }} · {{ j.site_address }} · pokrok {{ (prog*100)|round|int }} %</p>
+{% for e in data %}<section class="card brk"><h3>{{ e.date|dt }} · {{ e.weather }} · {{ e.workers }} lidí · {{ e.hours|num }} h <small class="muted">{{ e.author or '' }}</small></h3>
+<p class="pre">{{ e.work_done }}</p>{% if e.issues %}<p class="pre"><b>Problémy:</b> {{ e.issues }}</p>{% endif %}
+{% if e.use %}<p><b>Materiál:</b> {% for u in e.use %}{{ u.name }} {{ u.qty|num }} {{ u.unit }}{{ ', ' if not loop.last }}{% endfor %}</p>{% endif %}
+<div class="photos">{% for p in e.photos %}<figure><img src="{{ url_for('upload', fn=p.filename) }}" alt=""><figcaption>{{ PHASES[p.phase] }} {{ p.area }} {{ p.caption }}</figcaption></figure>{% endfor %}</div></section>{% endfor %}
+<h2>Spotřeba materiálu</h2><table>{% for m in mat %}<tr><td>{{ m.name }}</td><td class="r">{{ m.used|num }} / {{ m.plan|num }} {{ m.unit }}</td></tr>{% endfor %}</table>
+{% endblock %}

@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% block body %}
+<h1>{{ c.name if c else 'Nový zákazník' }}</h1>
+<form method="post" class="card"><input type="hidden" name="csrf" value="{{ csrf }}">
+<label>Jméno / firma<input name="name" value="{{ c.name if c }}" required></label>
+<label>Země<select name="country"><option value="CZ" {{ 'selected' if c and c.country=='CZ' }}>Česko (CZK)</option><option value="DE" {{ 'selected' if c and c.country=='DE' }}>Německo (EUR)</option></select></label>
+<div class="grid2"><label>IČO / Steuernr.<input name="ico" value="{{ c.ico if c }}"></label><label>DIČ / USt-IdNr.<input name="dic" value="{{ c.dic if c }}"></label></div>
+<div class="grid2"><label>E-mail<input name="email" value="{{ c.email if c }}"></label><label>Telefon<input name="phone" value="{{ c.phone if c }}"></label></div>
+<label>Fakturační adresa<textarea name="address" rows="3">{{ c.address if c }}</textarea></label>
+<label>Poznámka<textarea name="note" rows="2">{{ c.note if c }}</textarea></label>
+<button class="btn">Uložit</button></form>
+{% if c %}<div class="row"><h2>Zakázky</h2>{% if user.role=='admin' %}<a class="btn" href="{{ url_for('job_new', customer_id=c.id) }}">+ Zakázka</a>{% endif %}</div>
+<div class="card"><table>{% for j in jobs %}<tr><td><a href="{{ url_for('job', jid=j.id) }}">{{ j.number }} {{ j.name }}</a></td><td>{{ STATUS_CZ[j.status] }}</td></tr>{% endfor %}</table></div>{% endif %}
+{% endblock %}

@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% block body %}
+<div class="row"><h1>{{ j.number }} · {{ j.name }}</h1><span class="tag">{{ STATUS_CZ[j.status] }}</span></div>
+<p class="muted"><a href="{{ url_for('customer', cid=j.customer_id) }}">{{ j.cust }}</a>{% if j.site_address %} · {{ j.site_address }}{% endif %} · {{ j.currency }}</p>
+<div class="tabs">
+  <a class="btn" href="{{ url_for('diary_new', jid=j.id) }}">+ Zápis do deníku</a>
+  <a class="btn alt" href="{{ url_for('gallery', jid=j.id) }}">Fotky</a>
+  <a class="btn alt" href="{{ url_for('material', jid=j.id) }}">Materiál</a>
+  <a class="btn alt" href="{{ url_for('stages', jid=j.id) }}">Pokrok</a>
+  <a class="btn alt" href="{{ url_for('report', jid=j.id) }}">Tisk deníku</a>
+</div>
+<div class="grid3">
+  <div class="card stat"><small>Pokrok</small><b>{{ (prog*100)|round|int }} %</b><div class="bar"><i style="width:{{ (prog*100)|round|int }}%"></i></div></div>
+  <div class="card stat"><small>Zápisů / hodin</small><b>{{ stats.n }} / {{ stats.h|num }}</b></div>
+  {% if user.role == 'admin' %}<div class="card stat"><small>Materiál / rozpočet</small><b>{{ mat_cost|money(j.currency) }}</b><small>z {{ j.budget|money(j.currency) }}</small></div>{% endif %}
+</div>
+<h2>Deník</h2>
+{% for e in entries %}
+<a class="card" href="{{ url_for('entry', jid=j.id, eid=e.id) }}">
+  <div class="row"><b>{{ e.date|dt }}</b><span class="muted">{{ e.author or '' }}{% if e.nphotos %} · 📷 {{ e.nphotos }}{% endif %}</span></div>
+  <div>{{ e.work_done[:200] }}</div></a>
+{% else %}<p class="muted">Žádné zápisy.</p>{% endfor %}
+{% if user.role == 'admin' %}
+<h2>Doklady</h2>
+<form method="post" action="{{ url_for('doc_new', jid=j.id) }}" class="inline"><input type="hidden" name="csrf" value="{{ csrf }}">
+ <button class="btn alt" name="kind" value="quote">+ Nabídka</button>
+ <button class="btn alt" name="kind" value="advance">+ Zálohová faktura</button>
+ <button class="btn alt" name="kind" value="invoice">+ Faktura</button></form>
+<div class="card"><table>{% for d in docs %}<tr><td><a href="{{ url_for('doc', did=d.id) }}">{{ d.number }}</a></td><td>{{ KIND_CZ[d.kind] }}</td><td>{{ d.status }}</td><td class="r">{{ d.total|money(d.currency) }}</td></tr>{% else %}<tr><td class="muted">Zatím žádné doklady.</td></tr>{% endfor %}</table></div>
+<h2>Úprava zakázky</h2>
+<form method="post" action="{{ url_for('job_edit', jid=j.id) }}" class="card"><input type="hidden" name="csrf" value="{{ csrf }}">
+<label>Název<input name="name" value="{{ j.name }}" required></label>
+<label>Adresa stavby<input name="site_address" value="{{ j.site_address }}"></label>
+<div class="grid3"><label>Stav<select name="status">{% for k,v in STATUS_CZ.items() %}<option value="{{ k }}" {{ 'selected' if k==j.status }}>{{ v }}</option>{% endfor %}</select></label>
+<label>Zahájení<input type="date" name="start_date" value="{{ j.start_date or '' }}"></label><label>Plán. dokončení<input type="date" name="end_plan" value="{{ j.end_plan or '' }}"></label></div>
+<label>Rozpočet ({{ j.currency }})<input name="budget" value="{{ j.budget|num }}"></label>
+<label>Poznámka<textarea name="note">{{ j.note }}</textarea></label><button class="btn">Uložit</button></form>
+{% endif %}
+{% endblock %}
