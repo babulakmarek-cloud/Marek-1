@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="cs"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{% block title %}Stavební deník{% endblock %}</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head><body>
+{% if user %}
+<nav class="top">
+  <a href="{{ url_for('index') }}"><b>{{ company or 'Stavební deník' }}</b></a>
+  <a href="{{ url_for('index') }}">Zakázky</a>
+  <a href="{{ url_for('customers') }}">Zákazníci</a>
+  {% if user.role == 'admin' %}
+  <a href="{{ url_for('items') }}">Ceník</a>
+  <a href="{{ url_for('users') }}">Uživatelé</a>
+  <a href="{{ url_for('settings') }}">Firma</a>
+  {% endif %}
+  <form method="post" action="{{ url_for('logout') }}" class="inline"><input type="hidden" name="csrf" value="{{ csrf }}">
+    <button class="link">{{ user.name }} · odhlásit</button></form>
+</nav>
+{% endif %}
+<main>
+{% for m in get_flashed_messages() %}<div class="flash">{{ m }}</div>{% endfor %}
+{% block body %}{% endblock %}
+</main></body></html>

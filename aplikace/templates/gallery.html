@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% block body %}
+<p><a href="{{ url_for('job', jid=j.id) }}">← {{ j.name }}</a></p>
+<h1>Fotodokumentace</h1>
+<div class="tabs"><a class="btn {{ '' if not ph else 'alt' }}" href="{{ url_for('gallery', jid=j.id) }}">Vše</a>
+{% for k,v in PHASES.items() %}<a class="btn {{ '' if ph==k else 'alt' }}" href="{{ url_for('gallery', jid=j.id, phase=k) }}">{{ v }}</a>{% endfor %}</div>
+<form method="post" enctype="multipart/form-data" class="card"><input type="hidden" name="csrf" value="{{ csrf }}">
+<label>Přidat fotky<input type="file" name="photos" accept="image/*" multiple required></label>
+<div class="grid3"><label>Fáze<select name="phase">{% for k,v in PHASES.items() %}<option value="{{ k }}">{{ v }}</option>{% endfor %}</select></label>
+<label>Místo<input name="area"></label><label>Popis<input name="caption"></label></div><button class="btn">Nahrát</button></form>
+<div class="photos">{% for p in photos %}<figure><a href="{{ url_for('upload', fn=p.filename) }}"><img src="{{ url_for('upload', fn=p.filename) }}" loading="lazy" alt=""></a>
+<figcaption><b>{{ PHASES[p.phase] }}</b> · {{ p.taken|dt }} {{ p.area }}<br>{{ p.caption }}
+{% if user.role=='admin' %}<form method="post" action="{{ url_for('photo_delete', pid=p.id) }}" class="inline" onsubmit="return confirm('Smazat fotku?')"><input type="hidden" name="csrf" value="{{ csrf }}"><button class="link">smazat</button></form>{% endif %}</figcaption></figure>{% else %}<p class="muted">Žádné fotky.</p>{% endfor %}</div>
+{% endblock %}
