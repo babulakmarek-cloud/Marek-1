@@ -1,0 +1,1629 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Návrh rozváděče</title>
+<style>
+:root {
+  --bg: #f4f5f7; --panel: #fff; --ink: #1d2125; --mute: #5f6b76; --line: #d8dde3;
+  --acc: #0b62c4; --ok: #2b8a3e; --warn: #b26a00; --err: #c92a2a; --sel: #e7f1ff;
+}
+* { box-sizing: border-box; }
+body { margin: 0; font: 14px/1.4 "Segoe UI", Arial, sans-serif; background: var(--bg); color: var(--ink); }
+.bar { display: flex; align-items: center; gap: 12px; padding: 8px 16px; background: #1d2125; color: #fff; flex-wrap: wrap; }
+.brand { font-size: 16px; }
+.tools { display: flex; gap: 6px; flex-wrap: wrap; }
+.status { margin-left: auto; font-size: 13px; opacity: .85; }
+button { font: inherit; padding: 5px 10px; border: 1px solid var(--line); background: #fff; color: var(--ink); border-radius: 4px; cursor: pointer; }
+button:hover { border-color: var(--acc); }
+button.primary { background: var(--acc); color: #fff; border-color: var(--acc); }
+.bar button { background: #2c3238; color: #fff; border-color: #444c55; }
+.bar button.primary { background: var(--acc); border-color: var(--acc); }
+.tabs { display: flex; gap: 2px; padding: 0 16px; background: #e3e6ea; border-bottom: 1px solid var(--line); overflow-x: auto; }
+.tabs button { border: 0; border-radius: 0; background: transparent; padding: 9px 14px; white-space: nowrap; border-bottom: 3px solid transparent; }
+.tabs button.on { border-bottom-color: var(--acc); background: var(--panel); font-weight: 600; }
+main { padding: 16px; }
+.tab { display: none; }
+.tab.on { display: block; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 10px 16px; background: var(--panel); padding: 16px; border: 1px solid var(--line); border-radius: 6px; }
+.grid h3 { grid-column: 1 / -1; margin: 8px 0 0; font-size: 14px; color: var(--mute); text-transform: uppercase; letter-spacing: .04em; border-bottom: 1px solid var(--line); padding-bottom: 4px; }
+label.f { display: flex; flex-direction: column; gap: 3px; font-size: 12px; color: var(--mute); }
+label.f input, label.f select { font: inherit; font-size: 14px; color: var(--ink); padding: 5px 7px; border: 1px solid var(--line); border-radius: 4px; background: #fff; }
+label.f small { color: var(--mute); }
+.addbar { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; align-items: center; }
+.addbar .sep { width: 1px; height: 24px; background: var(--line); margin: 0 6px; }
+.split { display: grid; grid-template-columns: minmax(0, 1fr) 420px; gap: 12px; align-items: start; }
+@media (max-width: 1300px) { .split { grid-template-columns: 1fr; } }
+.tablewrap { overflow: auto; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; max-height: calc(100vh - 190px); }
+table.dev { border-collapse: collapse; font-size: 12px; white-space: nowrap; }
+table.dev th { position: sticky; top: 0; background: #eef1f4; z-index: 1; padding: 5px 4px; text-align: left; font-weight: 600; border-bottom: 1px solid var(--line); }
+table.dev th.grp { background: #e1e6eb; text-align: center; }
+table.dev td { padding: 2px 3px; border-bottom: 1px solid #eef0f2; }
+table.dev tr.sel td { background: var(--sel); }
+table.dev tr.rcdrow td { background: #fff8e1; }
+table.dev tr.rcdrow.sel td { background: var(--sel); }
+table.dev input, table.dev select { font: inherit; font-size: 12px; padding: 2px 3px; border: 1px solid transparent; background: transparent; border-radius: 3px; }
+table.dev input:hover, table.dev select:hover, table.dev input:focus, table.dev select:focus { border-color: var(--line); background: #fff; }
+table.dev input.n { width: 52px; } table.dev input.s { width: 64px; } table.dev input.m { width: 120px; } table.dev input.l { width: 160px; }
+table.dev td.na { color: #bbb; text-align: center; }
+.st { font-weight: 700; cursor: help; }
+.st.ok { color: var(--ok); } .st.warn { color: var(--warn); } .st.err { color: var(--err); }
+.preview { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 8px; position: sticky; top: 8px; }
+.preview svg, .drawing svg { width: 100%; height: auto; display: block; }
+.preview svg .dev, .drawing svg .dev { cursor: pointer; }
+.drawing { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 8px; margin-bottom: 16px; overflow: auto; }
+.drawing.mm svg { width: auto; max-width: none; }
+.dl { display: flex; gap: 6px; margin-bottom: 8px; flex-wrap: wrap; }
+.hint { color: var(--mute); margin: 0 0 10px; }
+.msgs { list-style: none; padding: 0; margin: 0 0 14px; }
+.msgs li { padding: 6px 10px; border-left: 4px solid; margin-bottom: 4px; background: #fff; border-radius: 3px; }
+.msgs li.err { border-color: var(--err); } .msgs li.warn { border-color: var(--warn); } .msgs li.ok { border-color: var(--ok); }
+.cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 10px; margin-bottom: 14px; }
+.card { background: #fff; border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px; }
+.card .v { font-size: 22px; font-weight: 600; }
+.card .k { font-size: 12px; color: var(--mute); }
+table.res { border-collapse: collapse; background: #fff; font-size: 12px; width: 100%; }
+table.res th, table.res td { border: 1px solid var(--line); padding: 4px 6px; text-align: right; white-space: nowrap; }
+table.res th { background: #eef1f4; text-align: center; }
+table.res td.t { text-align: left; white-space: normal; }
+table.res td.bad { color: var(--err); font-weight: 600; } table.res td.good { color: var(--ok); }
+.help { background: #fff; border: 1px solid var(--line); border-radius: 6px; padding: 16px 24px; max-width: 1000px; }
+.help h2 { margin-top: 0; }
+.help code { background: #f1f3f5; padding: 0 4px; border-radius: 3px; }
+.proto table.res td input { width: 70px; font: inherit; font-size: 12px; }
+.proto .chk { display: grid; grid-template-columns: 1fr 120px; gap: 2px 12px; background: #fff; padding: 12px; border: 1px solid var(--line); border-radius: 6px; margin-bottom: 14px; }
+.proto .chk select { font: inherit; }
+
+@media print {
+  @page { margin: 8mm; }
+  body { background: #fff; }
+  .bar, .tabs, .addbar, .dl, .hint, .tab:not(.printing), button { display: none !important; }
+  .tab.printing { display: block !important; }
+  main { padding: 0; }
+  .drawing { border: 0; padding: 0; page-break-after: always; overflow: visible; }
+  .drawing:not(.mm) svg { width: 100%; max-height: 190mm; }
+  .tablewrap, .preview { display: none; }
+  input, select { border: 0 !important; appearance: none; }
+}
+
+</style>
+</head>
+<body>
+<header class="bar">
+  <strong class="brand">⚡ Návrh rozváděče</strong>
+  <div class="tools">
+    <button data-act="new">Nový</button>
+    <button data-act="tpl">Šablona RD</button>
+    <button data-act="open">Otevřít…</button>
+    <button data-act="save">Uložit (.json)</button>
+    <button data-act="csv">Export CSV</button>
+    <button data-act="csvin">Import CSV…</button>
+    <button data-act="print" class="primary">Tisk / PDF</button>
+    <input type="file" id="fileIn" accept=".json,.csv,.txt" hidden>
+  </div>
+  <span id="status" class="status"></span>
+</header>
+
+<nav class="tabs" id="tabs">
+  <button data-tab="board" class="on">1 · Rozváděč</button>
+  <button data-tab="devices">2 · Přístroje a vývody</button>
+  <button data-tab="calc">3 · Výpočty</button>
+  <button data-tab="front">4 · Pohled</button>
+  <button data-tab="sl">5 · Jednopólové</button>
+  <button data-tab="ml">6 · Vícepólové</button>
+  <button data-tab="labels">7 · Štítky</button>
+  <button data-tab="proto">8 · Protokol</button>
+  <button data-tab="help">?</button>
+</nav>
+
+<main>
+  <section id="tab-board" class="tab on">
+    <div class="grid" id="boardForm"></div>
+  </section>
+
+  <section id="tab-devices" class="tab">
+    <div class="addbar" id="addbar"></div>
+    <div class="split">
+      <div class="tablewrap"><table class="dev" id="devTable"></table></div>
+      <div class="preview" id="miniFront"></div>
+    </div>
+  </section>
+
+  <section id="tab-calc" class="tab"><div id="calcOut"></div></section>
+  <section id="tab-front" class="tab"><div class="dl" data-sheet="front"></div><div class="drawing" id="frontOut"></div></section>
+  <section id="tab-sl" class="tab"><div class="dl" data-sheet="singleLine"></div><div class="drawing" id="slOut"></div></section>
+  <section id="tab-ml" class="tab"><div class="dl" data-sheet="multiLine"></div><div class="drawing" id="mlOut"></div></section>
+  <section id="tab-labels" class="tab">
+    <p class="hint">Popisky a štítky se generují v jazyce zvoleném v záložce 1 (CZ / DE / EN). Tisk 1:1 – v dialogu tisku nastavte měřítko <b>100 %</b> (ne „přizpůsobit stránce“).</p>
+    <div class="dl" data-sheet="labelStrips"></div><div class="drawing mm" id="labOut"></div>
+    <div class="dl" data-sheet="nameplate"></div><div class="drawing mm" id="plateOut"></div>
+    <div class="dl" data-sheet="circuitList"></div><div class="drawing mm" id="listOut"></div>
+  </section>
+  <section id="tab-proto" class="tab"><div id="protoOut"></div></section>
+  <section id="tab-help" class="tab"><div class="help" id="helpOut"></div></section>
+</main>
+
+<script>
+/* Katalog přístrojů, tabulky norem a šablony.
+ * Hodnoty tabulek: IEC/ČSN EN 60364-5-52 (ČSN 33 2000-5-52), příloha B – Cu, PVC 70 °C, okolí 30 °C.
+ * Ztrátové výkony přístrojů jsou TYPICKÉ hodnoty – pro oteplení dle EN 61439 použijte údaje výrobce.
+ */
+(function (root) {
+  'use strict';
+
+  // Proudová zatížitelnost Iz [A], Cu/PVC, 30 °C. Index = průřez.
+  const SECTIONS = [1.5, 2.5, 4, 6, 10, 16, 25, 35, 50, 70, 95, 120];
+  const IZ = {
+    // 2 zatížené vodiče (1f)
+    2: {
+      A1: [14.5, 19.5, 26, 34, 46, 61, 80, 99, 119, 151, 182, 210],
+      A2: [14, 18.5, 25, 32, 43, 57, 75, 92, 110, 139, 167, 192],
+      B1: [17.5, 24, 32, 41, 57, 76, 101, 125, 151, 192, 232, 269],
+      B2: [16.5, 23, 30, 38, 52, 69, 90, 111, 133, 168, 201, 232],
+      C: [19.5, 27, 36, 46, 63, 85, 112, 138, 168, 213, 258, 299],
+      E: [22, 30, 40, 51, 70, 94, 119, 148, 180, 232, 282, 328]
+    },
+    // 3 zatížené vodiče (3f)
+    3: {
+      A1: [13.5, 18, 24, 31, 42, 56, 73, 89, 108, 136, 164, 188],
+      A2: [13, 17.5, 23, 29, 39, 52, 68, 83, 99, 125, 150, 172],
+      B1: [15.5, 21, 28, 36, 50, 68, 89, 110, 134, 171, 207, 239],
+      B2: [15, 20, 27, 34, 46, 62, 80, 99, 118, 149, 179, 206],
+      C: [17.5, 24, 32, 41, 57, 76, 96, 119, 144, 184, 223, 259],
+      E: [18.5, 25, 34, 43, 60, 80, 101, 126, 153, 196, 238, 276]
+    }
+  };
+  const METHODS = {
+    A1: 'A1 – vodiče v trubce v tepelně izolační stěně',
+    A2: 'A2 – kabel v trubce v tepelně izolační stěně',
+    B1: 'B1 – vodiče v trubce na/ve zdi',
+    B2: 'B2 – kabel v trubce na/ve zdi',
+    C: 'C – kabel přímo na/ve zdi (pod omítkou)',
+    E: 'E – kabel ve volném vzduchu / na žlabu'
+  };
+  // Přepočet na teplotu okolí (PVC)
+  const K_TEMP = { 10: 1.22, 15: 1.17, 20: 1.12, 25: 1.06, 30: 1.0, 35: 0.94, 40: 0.87, 45: 0.79, 50: 0.71, 55: 0.61 };
+  // Seskupení – svazek (řada 1 tab. B.52.17)
+  const K_GROUP = { 1: 1.0, 2: 0.8, 3: 0.7, 4: 0.65, 5: 0.6, 6: 0.57, 7: 0.54, 8: 0.52, 9: 0.5, 12: 0.45, 16: 0.41, 20: 0.38 };
+
+  // Rated diversity factor (RDF) dle EN 61439-3 tab. 101 a EN 61439-2 tab. 101 (počet hlavních obvodů)
+  const RDF = {
+    '61439-3': [[1, 1.0], [3, 0.8], [5, 0.7], [9, 0.6], [Infinity, 0.5]],
+    '61439-2': [[1, 1.0], [3, 0.9], [5, 0.8], [9, 0.7], [Infinity, 0.6]]
+  };
+
+  // Pojistky gG – orientační proud Ia pro odpojení 5 s a 0,4 s [A] (z charakteristik IEC 60269, ORIENTAČNÍ)
+  const FUSE_GG = {
+    2: [9.2, 16], 4: [19, 32], 6: [28, 47], 10: [46, 82], 16: [65, 107], 20: [85, 145],
+    25: [110, 180], 32: [150, 265], 40: [190, 310], 50: [250, 460], 63: [320, 550],
+    80: [425, 735], 100: [580, 1050], 125: [715, 1300], 160: [950, 1800]
+  };
+
+  /* Katalog typů přístrojů.
+   * w = šířka v modulech (1 TE / 1 M = 17,5 mm), pv = typický ztrátový výkon na pól při In [W]
+   */
+  const DEVICE_TYPES = {
+    main: { name: 'Hlavní vypínač', de: 'Hauptschalter', en: 'Main switch', poles: [3, 4, 2, 1], w: p => p, pv: 1.0, bmk: 'Q' },
+    mcb: { name: 'Jistič', de: 'LS-Schalter', en: 'MCB', poles: [1, 2, 3, 4], w: p => p, pv: 2.2, bmk: 'F', circuit: true },
+    rcbo: { name: 'Proudový chránič s jističem', de: 'FI/LS-Schalter', en: 'RCBO', poles: [2, 4], w: p => p, pv: 3.0, bmk: 'F', circuit: true, rcd: true },
+    rcd: { name: 'Proudový chránič', de: 'FI-Schutzschalter', en: 'RCD', poles: [4, 2], w: p => p, pv: 1.5, bmk: 'F', rcd: true, group: true },
+    fuse: { name: 'Pojistkový odpínač', de: 'Sicherungslasttrennschalter', en: 'Fuse switch', poles: [1, 3], w: p => p * 1.5, pv: 3.0, bmk: 'F', circuit: true },
+    spd: { name: 'Přepěťová ochrana', de: 'Überspannungsschutz', en: 'SPD', poles: [4, 2], w: p => p, pv: 0.2, bmk: 'F' },
+    contactor: { name: 'Stykač', de: 'Schütz', en: 'Contactor', poles: [2, 4], w: p => (p > 2 ? 2 : 1), pv: 2.0, bmk: 'Q', circuit: true },
+    relay: { name: 'Impulzní relé / spínač', de: 'Stromstoßschalter', en: 'Impulse relay', poles: [1], w: () => 1, pv: 1.0, bmk: 'K' },
+    meter: { name: 'Elektroměr', de: 'Zähler', en: 'Energy meter', poles: [4, 2], w: p => (p > 2 ? 4 : 1), pv: 2.0, bmk: 'P' },
+    terminal: { name: 'Svorky', de: 'Klemmen', en: 'Terminals', poles: [5], w: () => 3, pv: 0.3, bmk: 'X' },
+    psu: { name: 'Zdroj / transformátor', de: 'Netzteil / Trafo', en: 'Power supply', poles: [1], w: () => 2, pv: 3.0, bmk: 'T' },
+    spacer: { name: 'Záslepka / rezerva', de: 'Reserve', en: 'Spare', poles: [1], w: () => 1, pv: 0, bmk: '' }
+  };
+
+  const LOAD_KINDS = {
+    zas: { cz: 'Zásuvky', de: 'Steckdosen', en: 'Sockets', ks: 0.3, cos: 0.95, rcdReq: true },
+    sv: { cz: 'Světla', de: 'Beleuchtung', en: 'Lighting', ks: 0.8, cos: 0.95, rcdReq: false },
+    spor: { cz: 'Sporák', de: 'Herd', en: 'Cooker', ks: 0.5, cos: 1.0, rcdReq: false },
+    motor: { cz: 'Motor', de: 'Motor', en: 'Motor', ks: 0.8, cos: 0.85, rcdReq: false },
+    tc: { cz: 'Tepelné čerpadlo', de: 'Wärmepumpe', en: 'Heat pump', ks: 1.0, cos: 0.9, rcdReq: false },
+    ev: { cz: 'Wallbox', de: 'Wallbox', en: 'EV charger', ks: 1.0, cos: 1.0, rcdReq: true },
+    pv: { cz: 'Fotovoltaika', de: 'PV-Anlage', en: 'PV system', ks: 1.0, cos: 1.0, rcdReq: false },
+    other: { cz: 'Ostatní', de: 'Sonstiges', en: 'Other', ks: 0.7, cos: 0.95, rcdReq: false }
+  };
+
+  const NETWORKS = ['TN-C-S', 'TN-S', 'TN-C', 'TT'];
+
+  // Texty pro štítky ve třech jazycích
+  const L = {
+    cz: {
+      manufacturer: 'Výrobce rozváděče', type: 'Typ / označení', serial: 'Výrobní číslo', date: 'Datum výroby',
+      standard: 'Norma', Un: 'Jmenovité napětí Un', Ui: 'Izolační napětí Ui', Uimp: 'Impulzní výdržné napětí Uimp',
+      InA: 'Jmenovitý proud rozváděče InA', fn: 'Kmitočet fn', Icc: 'Podmíněný zkratový proud Icc', Icw: 'Krátkodobý výdržný proud Icw',
+      RDF: 'Činitel soudobosti RDF', IP: 'Krytí', IK: 'Mechanická odolnost', network: 'Soustava', weight: 'Hmotnost',
+      plate: 'TYPOVÝ ŠTÍTEK ROZVÁDĚČE', warn: 'Pozor! Elektrické zařízení', warn2: 'Nepovolaným vstup zakázán',
+      board: 'Rozváděč', indoor: 'pro vnitřní použití', ordinary: 'obsluha laiky (DBO)', skilled: 'obsluha osobami znalými (PSC)'
+    },
+    de: {
+      manufacturer: 'Hersteller der Schaltgerätekombination', type: 'Typ / Kennzeichnung', serial: 'Seriennummer', date: 'Herstelldatum',
+      standard: 'Norm', Un: 'Bemessungsspannung Un', Ui: 'Bemessungsisolationsspannung Ui', Uimp: 'Bemessungsstoßspannung Uimp',
+      InA: 'Bemessungsstrom InA', fn: 'Bemessungsfrequenz fn', Icc: 'Bedingter Kurzschlussstrom Icc', Icw: 'Kurzzeitstromfestigkeit Icw',
+      RDF: 'Bemessungsbelastungsfaktor RDF', IP: 'Schutzart', IK: 'Stoßfestigkeit', network: 'Netzform', weight: 'Gewicht',
+      plate: 'TYPENSCHILD', warn: 'Warnung vor elektrischer Spannung', warn2: 'Zutritt für Unbefugte verboten',
+      board: 'Verteiler', indoor: 'für Innenraum', ordinary: 'Bedienung durch Laien (DBO)', skilled: 'Bedienung durch Fachkräfte (PSC)'
+    },
+    en: {
+      manufacturer: 'Assembly manufacturer', type: 'Type designation', serial: 'Serial number', date: 'Date of manufacture',
+      standard: 'Standard', Un: 'Rated voltage Un', Ui: 'Rated insulation voltage Ui', Uimp: 'Rated impulse withstand voltage Uimp',
+      InA: 'Rated current of assembly InA', fn: 'Rated frequency fn', Icc: 'Rated conditional short-circuit current Icc', Icw: 'Rated short-time withstand current Icw',
+      RDF: 'Rated diversity factor RDF', IP: 'Degree of protection', IK: 'Impact protection', network: 'Earthing system', weight: 'Weight',
+      plate: 'RATING PLATE', warn: 'Danger – electricity', warn2: 'No unauthorised access',
+      board: 'Distribution board', indoor: 'indoor use', ordinary: 'operation by ordinary persons (DBO)', skilled: 'operation by skilled persons (PSC)'
+    }
+  };
+
+  let _id = 1;
+  const nid = () => 'd' + (Date.now().toString(36)) + (_id++);
+
+  function dev(type, o) {
+    const t = DEVICE_TYPES[type];
+    const d = Object.assign({
+      id: nid(), type, poles: t.poles[0], In: 16, char: 'B', Icn: 6, IdN: 30, rcdType: 'A',
+      bmk: '', row: 1, parent: '', label: '',
+      circuit: null
+    }, o || {});
+    if (t.circuit && !d.circuit) d.circuit = newCircuit();
+    if (d.circuit) d.circuit = Object.assign(newCircuit(), d.circuit);
+    return d;
+  }
+  function newCircuit(o) {
+    return Object.assign({
+      name: '', kind: 'zas', P: 2.0, cos: 0.95, ks: null, phase: 'L1',
+      cable: 'CYKY-J 3x2,5', S: 2.5, Spe: 2.5, len: 20, method: 'C', group: 1, temp: 30
+    }, o || {});
+  }
+
+  function newBoard() {
+    return {
+      meta: {
+        name: 'Rozváděč RD1', bmk: '=RD1', location: '', project: '', manufacturer: '', type: '', serial: '',
+        date: new Date().toISOString().slice(0, 10), standard: '61439-3', network: 'TN-C-S',
+        Un: 400, U0: 230, fn: 50, Ui: 440, Uimp: 4, IP: 'IP40', IK: 'IK07', Icc: 6, weight: '',
+        Ze: 0.3, Ik3: 6, rows: 3, modules: 12, Pde: 30, dUfeed: 0.5, lang: 'cz', author: ''
+      },
+      devices: []
+    };
+  }
+
+  // Šablona: byt / RD – 3 řady po 12 M
+  function templateRD() {
+    const b = newBoard();
+    b.meta.name = 'Rozváděč RD – rodinný dům';
+    const q = dev('main', { bmk: '-Q1', poles: 3, In: 40, row: 1, label: 'Hlavní vypínač' });
+    const spd = dev('spd', { bmk: '-F1', poles: 4, In: 25, row: 1, label: 'SPD T1+T2' });
+    const r1 = dev('rcd', { bmk: '-F2', poles: 4, In: 40, IdN: 30, row: 2, label: 'Chránič A' });
+    const r2 = dev('rcd', { bmk: '-F3', poles: 4, In: 40, IdN: 30, row: 3, label: 'Chránič B' });
+    const c = (bmk, row, parent, In, char, circuit, poles) => dev('mcb', { bmk, row, parent: parent.id, In, char, poles: poles || 1, circuit: newCircuit(circuit) });
+    b.devices = [
+      q, spd,
+      dev('mcb', { bmk: '-F4', row: 1, poles: 3, In: 16, char: 'B', circuit: newCircuit({ name: 'Sporák', kind: 'spor', P: 9, cos: 1, phase: 'L123', cable: 'CYKY-J 5x2,5', S: 2.5, Spe: 2.5, len: 12 }) }),
+      dev('spacer', { row: 1 }), dev('spacer', { row: 1 }),
+      r1,
+      c('-F5', 2, r1, 10, 'B', { name: 'Světla přízemí', kind: 'sv', P: 0.6, phase: 'L1', cable: 'CYKY-J 3x1,5', S: 1.5, Spe: 1.5, len: 25 }),
+      c('-F6', 2, r1, 16, 'B', { name: 'Zásuvky obývák', kind: 'zas', P: 2.5, phase: 'L2', len: 22 }),
+      c('-F7', 2, r1, 16, 'B', { name: 'Zásuvky kuchyň', kind: 'zas', P: 3.0, phase: 'L3', len: 15 }),
+      c('-F8', 2, r1, 16, 'B', { name: 'Myčka', kind: 'other', P: 2.2, phase: 'L1', len: 14 }),
+      c('-F9', 2, r1, 16, 'B', { name: 'Pračka', kind: 'other', P: 2.3, phase: 'L2', len: 18 }),
+      dev('spacer', { row: 2 }), dev('spacer', { row: 2 }), dev('spacer', { row: 2 }),
+      r2,
+      c('-F10', 3, r2, 10, 'B', { name: 'Světla patro', kind: 'sv', P: 0.5, phase: 'L3', cable: 'CYKY-J 3x1,5', S: 1.5, Spe: 1.5, len: 30 }),
+      c('-F11', 3, r2, 16, 'B', { name: 'Zásuvky ložnice', kind: 'zas', P: 2.0, phase: 'L1', len: 28 }),
+      c('-F12', 3, r2, 16, 'B', { name: 'Zásuvky koupelna', kind: 'zas', P: 2.0, phase: 'L2', len: 26 }),
+      c('-F13', 3, r2, 16, 'B', { name: 'Venkovní zásuvky', kind: 'zas', P: 2.0, phase: 'L3', len: 35 }),
+      dev('terminal', { bmk: '-X1', row: 3, label: 'N/PE' })
+    ];
+    return b;
+  }
+
+  function templateEmpty() {
+    const b = newBoard();
+    b.devices = [dev('main', { bmk: '-Q1', poles: 3, In: 40, row: 1, label: 'Hlavní vypínač' })];
+    return b;
+  }
+
+  const api = { SECTIONS, IZ, METHODS, K_TEMP, K_GROUP, RDF, FUSE_GG, DEVICE_TYPES, LOAD_KINDS, NETWORKS, L, dev, newCircuit, newBoard, templateRD, templateEmpty };
+  root.RData = api;
+  if (typeof module !== 'undefined') module.exports = api;
+})(typeof window !== 'undefined' ? window : globalThis);
+
+</script>
+<script>
+/* Výpočty rozváděče: Ib, Iz, ΔU, Zs/Ik1, doba odpojení, zkrat, soudobost, oteplení, symetrie fází.
+ * Normy (CZ = ČSN, DE = DIN VDE, EU = EN/HD):
+ *  - ČSN 33 2000-4-41 / DIN VDE 0100-410 (HD 60364-4-41) – samočinné odpojení, doplňková ochrana RCD
+ *  - ČSN 33 2000-4-43 / DIN VDE 0100-430 – Ib ≤ In ≤ Iz, I2 ≤ 1,45·Iz
+ *  - ČSN 33 2000-5-52 / DIN VDE 0100-520 – zatížitelnost, úbytek napětí
+ *  - ČSN EN 61439-1/-2/-3 / DIN EN 61439 (VDE 0660-600) – RDF, oteplení, štítek
+ */
+(function (root) {
+  'use strict';
+  const D = root.RData || (typeof require !== 'undefined' ? require('./data.js') : null);
+
+  const RHO = 0.0225;      // Ω·mm²/m, Cu při 70 °C (1,25 × ρ20)
+  const X_PER_M = 0.08e-3; // Ω/m, reaktance kabelu
+  const CMIN = 0.95;       // napěťový činitel pro Ik min
+  const SQ3 = Math.sqrt(3);
+
+  const num = (v, d) => { const n = parseFloat(String(v).replace(',', '.')); return isFinite(n) ? n : (d === undefined ? 0 : d); };
+
+  function phasesOf(dv) {
+    if (!dv.circuit) return 1;
+    return (dv.poles >= 3 || dv.circuit.phase === 'L123') ? 3 : 1;
+  }
+
+  function nearestKey(table, v) {
+    const keys = Object.keys(table).map(Number).sort((a, b) => a - b);
+    let best = keys[0];
+    for (const k of keys) { if (k <= v) best = k; }
+    return best;
+  }
+  function kTemp(t) {
+    // lineární interpolace
+    const keys = Object.keys(D.K_TEMP).map(Number).sort((a, b) => a - b);
+    t = num(t, 30);
+    if (t <= keys[0]) return D.K_TEMP[keys[0]];
+    for (let i = 1; i < keys.length; i++) {
+      if (t <= keys[i]) {
+        const a = keys[i - 1], b = keys[i];
+        return D.K_TEMP[a] + (D.K_TEMP[b] - D.K_TEMP[a]) * (t - a) / (b - a);
+      }
+    }
+    return D.K_TEMP[keys[keys.length - 1]];
+  }
+  function kGroup(n) {
+    n = Math.max(1, Math.round(num(n, 1)));
+    // pro n mezi tabulkovými hodnotami bereme nejbližší vyšší počet (konzervativně)
+    const keys = Object.keys(D.K_GROUP).map(Number).sort((a, b) => a - b);
+    for (const k of keys) if (n <= k) return D.K_GROUP[k];
+    return D.K_GROUP[keys[keys.length - 1]];
+  }
+
+  function izBase(S, method, loaded) {
+    const i = D.SECTIONS.indexOf(num(S));
+    if (i < 0) return null;
+    const t = D.IZ[loaded >= 3 ? 3 : 2][method] || D.IZ[loaded >= 3 ? 3 : 2].C;
+    return t[i];
+  }
+
+  function iz(c, ph) {
+    const base = izBase(c.S, c.method, ph === 3 ? 3 : 2);
+    if (base == null) return null;
+    return base * kTemp(c.temp) * kGroup(c.group);
+  }
+
+  function ib(c, ph, meta) {
+    const P = num(c.P) * 1000, cos = num(c.cos, 1) || 1;
+    return ph === 3 ? P / (SQ3 * num(meta.Un, 400) * cos) : P / (num(meta.U0, 230) * cos);
+  }
+
+  function dU(c, ph, I, meta) {
+    const L = num(c.len), S = num(c.S, 1.5) || 1.5, cos = num(c.cos, 1) || 1;
+    const sin = Math.sqrt(Math.max(0, 1 - cos * cos));
+    const R = RHO * L / S, X = X_PER_M * L;
+    if (ph === 3) { const v = SQ3 * I * (R * cos + X * sin); return { V: v, pct: 100 * v / num(meta.Un, 400) }; }
+    const v = 2 * I * (R * cos + X * sin);
+    return { V: v, pct: 100 * v / num(meta.U0, 230) };
+  }
+
+  function loopZ(c, meta) {
+    const L = num(c.len), S = num(c.S, 1.5) || 1.5, Spe = num(c.Spe, S) || S;
+    return num(meta.Ze, 0.3) + RHO * L / S + RHO * L / Spe;
+  }
+
+  // vypínací proud Ia a požadovaná doba odpojení
+  function tripCurrent(dv, meta) {
+    const In = num(dv.In);
+    const tReq = (In <= 32) ? 0.4 : 5; // koncové obvody ≤ 32 A: 0,4 s (TN, 230 V); rozvodné: 5 s
+    if (dv.type === 'fuse') {
+      const k = nearestKey(D.FUSE_GG, In);
+      const row = D.FUSE_GG[k];
+      return { Ia: tReq === 0.4 ? row[1] : row[0], tReq, how: 'gG ' + k + ' A (orientačně)' };
+    }
+    if (dv.type === 'contactor') return { Ia: null, tReq, how: 'stykač – ochranu zajišťuje předřazený přístroj' };
+    const f = { B: 5, C: 10, D: 20, K: 14, Z: 3 }[dv.char] || 5;
+    return { Ia: f * In, tReq, how: dv.char + ' → ' + f + '×In' };
+  }
+
+  function findParent(board, dv) { return board.devices.find(x => x.id === dv.parent) || null; }
+
+  /** Výpočet jednoho vývodu */
+  function circuit(board, dv) {
+    const meta = board.meta, c = dv.circuit, res = { id: dv.id, msgs: [], ok: true };
+    if (!c) return null;
+    const warn = (m) => res.msgs.push({ lvl: 'warn', m });
+    const err = (m) => { res.msgs.push({ lvl: 'err', m }); res.ok = false; };
+    const ph = phasesOf(dv);
+    const kind = D.LOAD_KINDS[c.kind] || D.LOAD_KINDS.other;
+    res.ph = ph;
+    res.ks = c.ks == null || c.ks === '' ? kind.ks : num(c.ks, kind.ks);
+    res.Ib = ib(c, ph, meta);
+    res.In = num(dv.In);
+    res.IzBase = izBase(c.S, c.method, ph === 3 ? 3 : 2);
+    res.kT = kTemp(c.temp); res.kG = kGroup(c.group);
+    res.Iz = iz(c, ph);
+
+    // 1) Ib ≤ In ≤ Iz
+    if (res.Iz == null) err('Neznámý průřez ' + c.S + ' mm² (tabulka: ' + D.SECTIONS.join(', ') + ')');
+    if (res.Ib > res.In) err('Ib ' + res.Ib.toFixed(1) + ' A > In ' + res.In + ' A – přístroj je poddimenzovaný');
+    if (res.Iz != null) {
+      // I2: jistič 1,45·In; gG ≥16 A 1,6·In (pod 16 A 1,9·In)
+      const k2 = dv.type === 'fuse' ? (res.In >= 16 ? 1.6 : 1.9) : 1.45;
+      res.I2 = k2 * res.In;
+      if (res.In > res.Iz) err('In ' + res.In + ' A > Iz ' + res.Iz.toFixed(1) + ' A – kabel není chráněn proti přetížení');
+      else if (res.I2 > 1.45 * res.Iz + 1e-9) err('I2 ' + res.I2.toFixed(1) + ' A > 1,45·Iz ' + (1.45 * res.Iz).toFixed(1) + ' A');
+    }
+
+    // 2) úbytek napětí
+    const du = dU(c, ph, res.Ib, meta);
+    res.dU = du.pct; res.dUV = du.V;
+    res.dUtot = du.pct + num(meta.dUfeed, 0);
+    const lim = c.kind === 'sv' ? 3 : 5;
+    res.dULim = lim;
+    if (res.dUtot > lim) warn('Celkový úbytek ' + res.dUtot.toFixed(2) + ' % > ' + lim + ' % (ČSN 33 2000-5-52 příl. G; DE: DIN 18015-1 / TAB 3 % za elektroměrem)');
+
+    // 3) samočinné odpojení – Zs, Ik1
+    res.Zs = loopZ(c, meta);
+    res.Ik1 = CMIN * num(meta.U0, 230) / res.Zs;
+    const tr = tripCurrent(dv, meta);
+    res.Ia = tr.Ia; res.tReq = tr.tReq; res.iaHow = tr.how;
+    const rcd = dv.type === 'rcbo' ? dv : (findParent(board, dv) && D.DEVICE_TYPES[findParent(board, dv).type].rcd ? findParent(board, dv) : null);
+    res.rcd = rcd ? (rcd.IdN + ' mA typ ' + rcd.rcdType + (rcd === dv ? '' : ' (' + (rcd.bmk || 'RCD') + ')')) : '';
+    res.ZsMax = res.Ia ? CMIN * num(meta.U0, 230) / res.Ia : null;
+    if (meta.network === 'TT') {
+      if (!rcd) err('Soustava TT: vývod musí být chráněn proudovým chráničem');
+      else if (num(meta.Ze) * num(rcd.IdN) / 1000 > 50) err('TT: RA·IΔn = ' + (num(meta.Ze) * rcd.IdN / 1000).toFixed(1) + ' V > 50 V');
+      res.discOk = !!rcd;
+    } else if (res.Ia) {
+      res.discOk = res.Ik1 >= res.Ia;
+      if (!res.discOk) {
+        if (rcd) warn('Ik1 ' + res.Ik1.toFixed(0) + ' A < Ia ' + res.Ia.toFixed(0) + ' A – odpojení zajištěno jen chráničem ' + res.rcd);
+        else err('Ik1 ' + res.Ik1.toFixed(0) + ' A < Ia ' + res.Ia.toFixed(0) + ' A – nesplněna doba odpojení ' + res.tReq + ' s (Zs ' + res.Zs.toFixed(2) + ' Ω > ' + res.ZsMax.toFixed(2) + ' Ω)');
+      }
+    }
+
+    // 4) doplňková ochrana RCD ≤ 30 mA
+    if (kind.rcdReq && (!rcd || num(rcd.IdN) > 30)) err('Chybí doplňková ochrana RCD ≤ 30 mA (zásuvky ≤ 32 A, ČSN 33 2000-4-41 čl. 411.3.3 / VDE 0100-410)');
+    if (!rcd && c.kind === 'sv') warn('DE: v bytech RCD 30 mA i pro světelné obvody (DIN VDE 0100-410:2018-10)');
+    if (c.kind === 'ev' && rcd && rcd.rcdType === 'A') warn('Wallbox: RCD typ A jen s detekcí DC 6 mA ve wallboxu, jinak typ B');
+
+    // 5) vypínací schopnost
+    if (dv.type !== 'contactor' && dv.type !== 'fuse' && num(dv.Icn) < num(meta.Ik3)) warn('Icn ' + dv.Icn + ' kA < Ik3 ' + meta.Ik3 + ' kA na přípojnici – nutné jištění předřazením (back-up) dle výrobce');
+
+    // 6) selektivita s předřazeným
+    const main = board.devices.find(x => x.type === 'main');
+    const up = (findParent(board, dv) && findParent(board, dv).type !== 'rcd') ? findParent(board, dv) : null;
+    if (up && num(up.In) <= res.In) warn('In ' + res.In + ' A ≥ předřazený ' + up.In + ' A – neselektivní');
+    if (main && num(main.In) < res.In) warn('In ' + res.In + ' A > hlavní vypínač ' + main.In + ' A');
+    res.phase = ph === 3 ? 'L1L2L3' : c.phase;
+    return res;
+  }
+
+  function rdfFor(std, n) {
+    const t = D.RDF[std] || D.RDF['61439-3'];
+    for (const [max, f] of t) if (n <= max) return f;
+    return t[t.length - 1][1];
+  }
+
+  /** Výpočet celého rozváděče */
+  function board(b) {
+    const meta = b.meta;
+    const circuits = {}, out = { circuits, msgs: [], phases: { L1: 0, L2: 0, L3: 0 }, phasesP: { L1: 0, L2: 0, L3: 0 } };
+    const outs = b.devices.filter(d => d.circuit);
+    for (const d of outs) circuits[d.id] = circuit(b, d);
+    out.nCircuits = outs.length;
+    out.RDF = rdfFor(meta.standard, outs.length);
+
+    let Pinst = 0, Psim = 0;
+    for (const d of outs) {
+      const r = circuits[d.id], c = d.circuit, P = num(c.P);
+      Pinst += P; Psim += P * r.ks;
+      const Iks = r.Ib * r.ks;
+      if (r.ph === 3) { for (const p of ['L1', 'L2', 'L3']) { out.phases[p] += Iks; out.phasesP[p] += P * r.ks / 3; } }
+      else { const p = ['L1', 'L2', 'L3'].includes(c.phase) ? c.phase : 'L1'; out.phases[p] += Iks; out.phasesP[p] += P * r.ks; }
+    }
+    out.Pinst = Pinst; out.Psim = Psim;
+    const Iv = Object.values(out.phases);
+    out.Imax = Math.max(...Iv); out.Imin = Math.min(...Iv);
+    out.unbalance = out.Imax > 0 ? 100 * (out.Imax - out.Imin) / out.Imax : 0;
+    if (out.unbalance > 30 && out.Imax > 5) out.msgs.push({ lvl: 'warn', m: 'Nesymetrie fází ' + out.unbalance.toFixed(0) + ' % – zvažte přerozdělení (tlačítko „Vyvážit fáze“)' });
+
+    const main = b.devices.find(d => d.type === 'main');
+    out.InA = main ? num(main.In) : null;
+    if (main && out.Imax > num(main.In)) out.msgs.push({ lvl: 'err', m: 'Soudobý proud ' + out.Imax.toFixed(1) + ' A > hlavní vypínač ' + main.In + ' A' });
+    if (!main) out.msgs.push({ lvl: 'warn', m: 'Rozváděč nemá hlavní vypínač' });
+
+    // zatížení chráničů
+    out.rcdLoad = {};
+    for (const r of b.devices.filter(d => d.type === 'rcd')) {
+      const ch = { L1: 0, L2: 0, L3: 0 };
+      for (const d of outs.filter(x => x.parent === r.id)) {
+        const rr = circuits[d.id], I = rr.Ib * rr.ks;
+        if (rr.ph === 3) { ch.L1 += I; ch.L2 += I; ch.L3 += I; } else ch[d.circuit.phase] = (ch[d.circuit.phase] || 0) + I;
+      }
+      const m = Math.max(ch.L1, ch.L2, ch.L3);
+      out.rcdLoad[r.id] = m;
+      if (m > num(r.In)) out.msgs.push({ lvl: 'err', m: (r.bmk || 'RCD') + ': soudobý proud ' + m.toFixed(1) + ' A > In ' + r.In + ' A' });
+      if (r.poles === 2 && outs.some(x => x.parent === r.id && phasesOf(x) === 3)) out.msgs.push({ lvl: 'err', m: (r.bmk || 'RCD') + ': 2pólový chránič nemůže chránit 3f vývod' });
+      const n = outs.filter(x => x.parent === r.id).length;
+      if (n > 6) out.msgs.push({ lvl: 'warn', m: (r.bmk || 'RCD') + ': ' + n + ' vývodů za jedním chráničem – riziko nežádoucího vybavení (doporučeno ≤ 4–6)' });
+    }
+
+    // ztrátový výkon (EN 61439-1 čl. 10.10.4 / IEC TR 60890)
+    let Pv = 0;
+    const pvList = [];
+    for (const d of b.devices) {
+      const t = D.DEVICE_TYPES[d.type];
+      let load = 1;
+      if (d.circuit) load = Math.min(1.2, circuits[d.id].Ib * circuits[d.id].ks / Math.max(1, num(d.In)));
+      else if (d.type === 'rcd') load = Math.min(1.2, (out.rcdLoad[d.id] || 0) / Math.max(1, num(d.In)));
+      else if (d.type === 'main') load = Math.min(1.2, out.Imax / Math.max(1, num(d.In)));
+      else if (d.type === 'spacer') load = 0;
+      const p = t.pv * (d.poles || 1) * load * load;
+      Pv += p; pvList.push({ id: d.id, p });
+    }
+    out.Pv = Pv; out.pvList = pvList;
+    if (num(meta.Pde) > 0 && Pv > num(meta.Pde)) out.msgs.push({ lvl: 'err', m: 'Ztrátový výkon ' + Pv.toFixed(1) + ' W > Pde skříně ' + meta.Pde + ' W (ověření oteplení EN 61439-3 čl. 10.10.4.2)' });
+
+    // šířka řad
+    out.rowWidth = {};
+    for (const d of b.devices) out.rowWidth[d.row] = (out.rowWidth[d.row] || 0) + width(d);
+    for (const [r, w] of Object.entries(out.rowWidth)) {
+      if (w > num(meta.modules)) out.msgs.push({ lvl: 'err', m: 'Řada ' + r + ': ' + w + ' M > ' + meta.modules + ' M' });
+      if (num(r) > num(meta.rows)) out.msgs.push({ lvl: 'err', m: 'Řada ' + r + ' neexistuje (skříň má ' + meta.rows + ' řady)' });
+    }
+    const used = b.devices.filter(d => d.type !== 'spacer').reduce((a, d) => a + width(d), 0);
+    out.reserve = num(meta.rows) * num(meta.modules) - used;
+    if (out.reserve < 0.2 * num(meta.rows) * num(meta.modules)) out.msgs.push({ lvl: 'warn', m: 'Rezerva místa ' + out.reserve + ' M (< 20 %) – doporučeno ponechat rezervu' });
+
+    // duplicita BMK
+    const seen = {};
+    for (const d of b.devices) if (d.bmk) { if (seen[d.bmk]) out.msgs.push({ lvl: 'warn', m: 'Duplicitní označení ' + d.bmk }); seen[d.bmk] = 1; }
+
+    out.ok = !out.msgs.some(m => m.lvl === 'err') && Object.values(circuits).every(c => c.ok);
+    return out;
+  }
+
+  function width(d) { const t = D.DEVICE_TYPES[d.type]; return t ? t.w(d.poles || 1) : 1; }
+
+  /** Navrhne nejmenší průřez splňující Iz, ΔU a odpojení */
+  function suggestS(b, dv) {
+    const orig = Object.assign({}, dv.circuit);
+    let found = null;
+    for (const S of D.SECTIONS) {
+      dv.circuit.S = S; dv.circuit.Spe = S <= 16 ? S : Math.max(16, S / 2);
+      const r = circuit(b, dv);
+      const hardFail = r.msgs.some(m => m.lvl === 'err' && /Iz|I2|odpojení|průřez/.test(m.m));
+      if (!hardFail && r.dUtot <= r.dULim) { found = S; break; }
+    }
+    Object.assign(dv.circuit, orig);
+    return found;
+  }
+
+  /** Vyvážení 1f vývodů mezi fáze (greedy podle výkonu) */
+  function balance(b) {
+    const load = { L1: 0, L2: 0, L3: 0 };
+    const outs = b.devices.filter(d => d.circuit);
+    for (const d of outs) if (phasesOf(d) === 3) for (const p in load) load[p] += num(d.circuit.P) / 3;
+    const single = outs.filter(d => phasesOf(d) === 1).sort((a, c) => num(c.circuit.P) * ks(c) - num(a.circuit.P) * ks(a));
+    for (const d of single) {
+      const p = Object.keys(load).sort((a, c) => load[a] - load[c])[0];
+      d.circuit.phase = p; load[p] += num(d.circuit.P) * ks(d);
+    }
+    return load;
+  }
+  function ks(d) { const k = D.LOAD_KINDS[d.circuit.kind] || D.LOAD_KINDS.other; return d.circuit.ks == null || d.circuit.ks === '' ? k.ks : num(d.circuit.ks); }
+
+  /** Automatické číslování BMK podle pořadí v řadách */
+  function renumber(b) {
+    const cnt = {};
+    const order = [...b.devices].sort((a, c) => a.row - c.row || b.devices.indexOf(a) - b.devices.indexOf(c));
+    for (const d of order) {
+      const L = D.DEVICE_TYPES[d.type].bmk;
+      if (!L) { d.bmk = ''; continue; }
+      cnt[L] = (cnt[L] || 0) + 1; d.bmk = '-' + L + cnt[L];
+    }
+  }
+
+  const api = { RHO, num, phasesOf, iz, izBase, ib, dU, loopZ, kTemp, kGroup, tripCurrent, circuit, board, rdfFor, width, suggestS, balance, renumber };
+  root.RCalc = api;
+  if (typeof module !== 'undefined') module.exports = api;
+})(typeof window !== 'undefined' ? window : globalThis);
+
+</script>
+<script>
+/* Kreslení: pohled na rozváděč, jednopólové a vícepólové schéma, popisky, typový štítek.
+ * Vše se kreslí do seznamu primitiv v mm → render do SVG (tisk 1:1) nebo DXF (CAD).
+ */
+(function (root) {
+  'use strict';
+  const D = root.RData, C = root.RCalc;
+  const M = 17.5; // šířka modulu [mm]
+
+  // ---------- primitiva ----------
+  function Sheet(w, h) { this.w = w; this.h = h; this.p = []; }
+  Sheet.prototype.line = function (x1, y1, x2, y2, o) { this.p.push(Object.assign({ t: 'line', x1, y1, x2, y2 }, o)); return this; };
+  Sheet.prototype.rect = function (x, y, w, h, o) { this.p.push(Object.assign({ t: 'rect', x, y, w, h }, o)); return this; };
+  Sheet.prototype.circle = function (cx, cy, r, o) { this.p.push(Object.assign({ t: 'circle', cx, cy, r }, o)); return this; };
+  Sheet.prototype.text = function (x, y, s, o) { this.p.push(Object.assign({ t: 'text', x, y, s: String(s == null ? '' : s), size: 2.5 }, o)); return this; };
+  Sheet.prototype.poly = function (pts, o) { this.p.push(Object.assign({ t: 'poly', pts }, o)); return this; };
+
+  const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  const f = n => +(+n).toFixed(2);
+
+  function toSVG(sh, opt) {
+    opt = opt || {};
+    const out = [];
+    out.push('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + f(sh.w) + ' ' + f(sh.h) + '"' +
+      (opt.mm ? ' width="' + f(sh.w) + 'mm" height="' + f(sh.h) + 'mm"' : '') +
+      ' font-family="Arial, Helvetica, sans-serif" class="sheet">');
+    out.push('<rect x="0" y="0" width="' + f(sh.w) + '" height="' + f(sh.h) + '" fill="#fff"/>');
+    for (const e of sh.p) {
+      const st = ' stroke="' + (e.stroke || '#000') + '" stroke-width="' + (e.sw || 0.25) + '"' + (e.dash ? ' stroke-dasharray="' + e.dash + '"' : '');
+      const data = e.id ? ' data-id="' + e.id + '"' : '';
+      if (e.t === 'line') out.push('<line x1="' + f(e.x1) + '" y1="' + f(e.y1) + '" x2="' + f(e.x2) + '" y2="' + f(e.y2) + '"' + st + '/>');
+      else if (e.t === 'rect') out.push('<rect' + data + ' x="' + f(e.x) + '" y="' + f(e.y) + '" width="' + f(e.w) + '" height="' + f(e.h) + '"' + (e.rx ? ' rx="' + e.rx + '"' : '') + ' fill="' + (e.fill || 'none') + '"' + (e.stroke === 'none' ? '' : st) + (e.cls ? ' class="' + e.cls + '"' : '') + '/>');
+      else if (e.t === 'circle') out.push('<circle cx="' + f(e.cx) + '" cy="' + f(e.cy) + '" r="' + f(e.r) + '" fill="' + (e.fill || 'none') + '"' + (e.stroke === 'none' ? '' : st) + '/>');
+      else if (e.t === 'poly') out.push('<polygon points="' + e.pts.map(p => f(p[0]) + ',' + f(p[1])).join(' ') + '" fill="' + (e.fill || 'none') + '"' + (e.stroke === 'none' ? '' : st) + '/>');
+      else if (e.t === 'text') {
+        const anchor = e.anchor || 'start';
+        const tr = e.rot ? ' transform="rotate(' + e.rot + ' ' + f(e.x) + ' ' + f(e.y) + ')"' : '';
+        out.push('<text x="' + f(e.x) + '" y="' + f(e.y) + '" font-size="' + e.size + '" text-anchor="' + anchor + '"' +
+          (e.weight ? ' font-weight="' + e.weight + '"' : '') + ' fill="' + (e.fill || '#000') + '"' + tr + '>' + esc(e.s) + '</text>');
+      }
+    }
+    out.push('</svg>');
+    return out.join('');
+  }
+
+  // DXF R12 (ASCII) – kompatibilní s AutoCAD, DraftSight, LibreCAD, EPLAN import
+  function toDXF(sh) {
+    const o = [];
+    const P = (c, v) => { o.push(String(c)); o.push(String(v)); };
+    const Y = y => f(sh.h - y);
+    const layer = e => e.layer || (e.t === 'text' ? 'TEXT' : 'GEOM');
+    P(0, 'SECTION'); P(2, 'HEADER'); P(9, '$INSUNITS'); P(70, 4); P(0, 'ENDSEC');
+    P(0, 'SECTION'); P(2, 'ENTITIES');
+    const line = (x1, y1, x2, y2, e) => { P(0, 'LINE'); P(8, layer(e)); P(10, f(x1)); P(20, Y(y1)); P(30, 0); P(11, f(x2)); P(21, Y(y2)); P(31, 0); };
+    for (const e of sh.p) {
+      if (e.t === 'line') line(e.x1, e.y1, e.x2, e.y2, e);
+      else if (e.t === 'rect') { if (e.stroke === 'none') continue; line(e.x, e.y, e.x + e.w, e.y, e); line(e.x + e.w, e.y, e.x + e.w, e.y + e.h, e); line(e.x + e.w, e.y + e.h, e.x, e.y + e.h, e); line(e.x, e.y + e.h, e.x, e.y, e); }
+      else if (e.t === 'poly') { for (let i = 0; i < e.pts.length; i++) { const a = e.pts[i], b = e.pts[(i + 1) % e.pts.length]; line(a[0], a[1], b[0], b[1], e); } }
+      else if (e.t === 'circle') { P(0, 'CIRCLE'); P(8, layer(e)); P(10, f(e.cx)); P(20, Y(e.cy)); P(30, 0); P(40, f(e.r)); }
+      else if (e.t === 'text' && e.s) {
+        const h = e.size * 0.72; // výška verzálek
+        P(0, 'TEXT'); P(8, 'TEXT'); P(10, f(e.x)); P(20, Y(e.y)); P(30, 0); P(40, f(h)); P(1, e.s.replace(/[\r\n]/g, ' '));
+        if (e.rot) P(50, f(-e.rot));
+        const al = { middle: 1, end: 2 }[e.anchor];
+        if (al) { P(72, al); P(11, f(e.x)); P(21, Y(e.y)); P(31, 0); }
+      }
+    }
+    P(0, 'ENDSEC'); P(0, 'EOF');
+    return o.join('\r\n');
+  }
+
+  // ---------- pomocné ----------
+  const tr = (meta, k) => (D.L[meta.lang] || D.L.cz)[k];
+  function cname(d, lang) {
+    if (d.circuit && d.circuit.name) return d.circuit.name;
+    if (d.label) return d.label;
+    const t = D.DEVICE_TYPES[d.type];
+    return lang === 'de' ? t.de : lang === 'en' ? t.en : t.name;
+  }
+  function rating(d) {
+    if (d.type === 'mcb') return d.char + d.In;
+    if (d.type === 'rcbo') return d.char + d.In + ' ' + d.IdN + 'mA';
+    if (d.type === 'rcd') return d.In + 'A ' + d.IdN + 'mA';
+    if (d.type === 'fuse') return d.In + 'A gG';
+    if (d.type === 'main' || d.type === 'contactor') return d.In + 'A';
+    if (d.type === 'spd') return 'T1+T2';
+    return '';
+  }
+  function wrap(s, maxChars, maxLines) {
+    const words = String(s).split(/\s+/); const lines = []; let cur = '';
+    for (const w of words) {
+      if ((cur + ' ' + w).trim().length <= maxChars) cur = (cur + ' ' + w).trim();
+      else { if (cur) lines.push(cur); cur = w.length > maxChars ? w.slice(0, maxChars) : w; }
+    }
+    if (cur) lines.push(cur);
+    return lines.slice(0, maxLines);
+  }
+  function titleBlock(sh, b, title, sheetNo) {
+    const m = b.meta, w = 180, h = 22, x = sh.w - w - 5, y = sh.h - h - 5;
+    sh.rect(5, 5, sh.w - 10, sh.h - 10, { sw: 0.5 });
+    sh.rect(x, y, w, h, { sw: 0.5 });
+    sh.line(x, y + 8, x + w, y + 8); sh.line(x + 110, y, x + 110, y + h); sh.line(x + 110, y + 15, x + w, y + 15);
+    sh.text(x + 2, y + 6, title, { size: 4, weight: 'bold' });
+    sh.text(x + 2, y + 13, (m.project || '') + (m.location ? ' – ' + m.location : ''), { size: 2.8 });
+    sh.text(x + 2, y + 19, m.name + '  ' + (m.bmk || ''), { size: 3.2, weight: 'bold' });
+    sh.text(x + 112, y + 6, 'Datum: ' + (m.date || ''), { size: 2.5 });
+    sh.text(x + 112, y + 13, 'Zprac.: ' + (m.author || ''), { size: 2.5 });
+    sh.text(x + 112, y + 20, 'List ' + sheetNo + '   ' + m.network + ' ' + m.U0 + '/' + m.Un + ' V ' + m.fn + ' Hz', { size: 2.5 });
+  }
+
+  // ---------- pohled na rozváděč ----------
+  function front(b, opt) {
+    opt = opt || {};
+    const m = b.meta, rows = Math.max(1, +m.rows), mods = Math.max(1, +m.modules);
+    const pad = 30, rowH = 125, labH = 14;
+    const W = mods * M + 2 * pad, H = rows * rowH + 2 * pad;
+    const sh = new Sheet(W + 20, H + 30);
+    const ox = 10, oy = 10;
+    // skříň
+    sh.rect(ox, oy, W, H, { fill: '#e9ecef', sw: 0.8, rx: 4 });
+    sh.rect(ox + 8, oy + 8, W - 16, H - 16, { fill: '#f8f9fa', sw: 0.3, rx: 2 });
+    sh.text(ox + W / 2, oy + 6, m.name + ' ' + (m.bmk || '') + '  –  ' + rows + ' × ' + mods + ' M  (' + f(mods * M) + ' mm)', { size: 3.5, anchor: 'middle', weight: 'bold' });
+    for (let r = 1; r <= rows; r++) {
+      const y0 = oy + pad + (r - 1) * rowH;
+      const railY = y0 + labH + 45;
+      // popisový pruh
+      sh.rect(ox + pad, y0, mods * M, labH, { fill: '#fffbe6', sw: 0.2 });
+      // DIN lišta
+      sh.rect(ox + pad - 8, railY - 3.75, mods * M + 16, 7.5, { fill: '#adb5bd', sw: 0.2 });
+      sh.text(ox + pad - 12, railY + 1.2, r, { size: 3.5, anchor: 'end', weight: 'bold' });
+      // kryt s výřezem
+      sh.rect(ox + pad, railY - 22.5, mods * M, 45, { fill: '#343a40', stroke: 'none' });
+      let x = ox + pad;
+      for (const d of b.devices.filter(d => +d.row === r)) {
+        const w = C.width(d) * M;
+        drawDevice(sh, d, x, railY, w, opt);
+        // popisek
+        const lines = wrap(cname(d, m.lang), Math.max(4, Math.floor(w / 1.45)), 3);
+        sh.text(x + w / 2, y0 + 3.3, d.bmk || '', { size: 2.4, anchor: 'middle', weight: 'bold' });
+        lines.forEach((ln, i) => sh.text(x + w / 2, y0 + 6.6 + i * 2.6, ln, { size: 2.0, anchor: 'middle' }));
+        sh.line(x, y0, x, y0 + labH, { sw: 0.15 });
+        x += w;
+      }
+      sh.line(x, y0, x, y0 + labH, { sw: 0.15 });
+      if (x > ox + pad + mods * M + 0.1) sh.text(ox + pad + mods * M, railY + 30, '⚠ přeplněno', { size: 3, fill: '#c00', anchor: 'end' });
+    }
+    return sh;
+  }
+
+  function drawDevice(sh, d, x, cy, w, opt) {
+    const sel = opt.selected === d.id;
+    const top = cy - 45, h = 90;
+    const t = d.type;
+    const body = { spacer: '#495057', meter: '#f1f3f5', terminal: '#ced4da' }[t] || '#f8f9fa';
+    if (t === 'spacer') { sh.rect(x + 0.3, cy - 22, w - 0.6, 44, { fill: '#495057', sw: 0.2, id: d.id, cls: 'dev' }); return; }
+    sh.rect(x + 0.3, top, w - 0.6, h, { fill: body, sw: sel ? 0.9 : 0.25, stroke: sel ? '#0d6efd' : '#000', rx: 1, id: d.id, cls: 'dev' });
+    // svorky nahoře/dole
+    const poles = d.poles || 1, pw = w / Math.max(1, poles);
+    for (let i = 0; i < poles && t !== 'terminal'; i++) {
+      sh.circle(x + pw * (i + 0.5), top + 4, 1.6, { fill: '#adb5bd', sw: 0.15 });
+      sh.circle(x + pw * (i + 0.5), top + h - 4, 1.6, { fill: '#adb5bd', sw: 0.15 });
+    }
+    sh.text(x + w / 2, top + 13, rating(d), { size: w < 20 ? 2.6 : 3.2, anchor: 'middle', weight: 'bold' });
+    if (t === 'mcb' || t === 'rcbo' || t === 'main' || t === 'rcd' || t === 'fuse') {
+      const lw = Math.min(6, w * 0.4);
+      const col = t === 'main' ? '#c92a2a' : t === 'fuse' ? '#495057' : '#212529';
+      // páčka (spojená přes všechny póly)
+      sh.rect(x + w / 2 - Math.max(lw, w * 0.35) / 2, cy - 9, Math.max(lw, w * 0.35), 14, { fill: col, sw: 0.2, rx: 1 });
+      sh.text(x + w / 2, cy - 11, 'I', { size: 2.2, anchor: 'middle', fill: '#555' });
+      sh.text(x + w / 2, cy + 9, 'O', { size: 2.2, anchor: 'middle', fill: '#555' });
+      if (d.type === 'rcd' || d.type === 'rcbo') {
+        sh.rect(x + w - 6, cy + 13, 4, 4, { fill: '#ffd43b', sw: 0.2 });
+        sh.text(x + w - 4, cy + 16.2, 'T', { size: 2.4, anchor: 'middle', weight: 'bold' });
+        sh.text(x + 2, cy + 16.5, 'typ ' + d.rcdType, { size: 2 });
+      }
+    } else if (t === 'spd') {
+      for (let i = 0; i < poles; i++) sh.rect(x + pw * i + pw * 0.2, cy - 6, pw * 0.6, 8, { fill: '#51cf66', sw: 0.2 });
+    } else if (t === 'meter') {
+      sh.rect(x + 3, cy - 10, w - 6, 9, { fill: '#c3fae8', sw: 0.2 });
+      sh.text(x + w / 2, cy - 3.5, '000123,4', { size: 2.4, anchor: 'middle' });
+      sh.text(x + w / 2, cy + 6, 'kWh', { size: 2.4, anchor: 'middle' });
+    } else if (t === 'terminal') {
+      const n = Math.round(w / 5);
+      const cols = ['#1c7ed6', '#1c7ed6', '#2f9e44', '#2f9e44', '#868e96'];
+      for (let i = 0; i < n; i++) sh.rect(x + 0.5 + i * (w - 1) / n, top + 10, (w - 1) / n - 0.4, h - 20, { fill: cols[i % cols.length], sw: 0.1 });
+    } else {
+      sh.rect(x + 2, cy - 6, w - 4, 12, { fill: '#dee2e6', sw: 0.2 });
+      sh.text(x + w / 2, cy + 1, D.DEVICE_TYPES[t].bmk === 'Q' ? 'A1 A2' : t === 'psu' ? '~/=' : '◼', { size: 2.2, anchor: 'middle' });
+    }
+    sh.text(x + w / 2, top + h - 9, d.bmk || '', { size: 2.6, anchor: 'middle', weight: 'bold' });
+  }
+
+  // ---------- struktura pro schémata ----------
+  function groups(b) {
+    const devs = b.devices.filter(d => !['spacer', 'terminal', 'main'].includes(d.type));
+    const used = new Set();
+    const g = [];
+    for (const d of devs) {
+      if (used.has(d.id)) continue;
+      if (d.type === 'rcd') {
+        const ch = devs.filter(x => x.parent === d.id);
+        ch.forEach(x => used.add(x.id));
+        used.add(d.id);
+        g.push({ head: d, items: ch.length ? ch : [] , cols: Math.max(1, ch.length) });
+      } else if (!d.parent || !devs.find(x => x.id === d.parent)) {
+        used.add(d.id); g.push({ head: null, items: [d], cols: 1 });
+      }
+    }
+    return g;
+  }
+  function phaseList(d) {
+    const c = d.circuit;
+    const ph = C.phasesOf(d);
+    if (d.type === 'spd' || d.type === 'meter') return d.poles >= 3 ? ['L1', 'L2', 'L3', 'N'] : ['L1', 'N'];
+    if (d.type === 'rcd') return d.poles >= 4 ? ['L1', 'L2', 'L3', 'N'] : [d._ph || 'L1', 'N'];
+    if (!c) return [d._ph || 'L1'];
+    if (ph === 3) return d.poles >= 4 ? ['L1', 'L2', 'L3', 'N'] : ['L1', 'L2', 'L3'];
+    return d.poles >= 2 ? [c.phase, 'N'] : [c.phase];
+  }
+
+  // ---------- jednopólové schéma ----------
+  function singleLine(b, calc) {
+    const m = b.meta, G = groups(b);
+    const colW = 26, x0 = 60;
+    const nCols = G.reduce((a, g) => a + g.cols, 0);
+    const W = Math.max(420, x0 + nCols * colW + 30), H = 297;
+    const sh = new Sheet(W, H);
+    titleBlock(sh, b, 'Jednopólové schéma / Übersichtsschaltplan', 1);
+    const main = b.devices.find(d => d.type === 'main');
+    const busY = 70;
+    // přívod
+    const ix = 35;
+    sh.line(ix, 15, ix, 30, { sw: 0.5 });
+    sh.text(ix + 3, 18, 'Přívod / Einspeisung', { size: 2.5 });
+    sh.text(ix + 3, 22, m.network + ' ' + m.U0 + '/' + m.Un + ' V ' + m.fn + ' Hz', { size: 2.5 });
+    sh.text(ix + 3, 26, 'Ik3 = ' + m.Ik3 + ' kA, Ze = ' + m.Ze + ' Ω', { size: 2.5 });
+    if (main) { symDisconnector(sh, ix, 30, main); sh.text(ix + 6, 40, main.bmk + '  ' + main.In + ' A  ' + main.poles + 'p', { size: 2.6, weight: 'bold' }); }
+    else sh.line(ix, 30, ix, 48, { sw: 0.5 });
+    sh.line(ix, 48, ix, busY, { sw: 0.5 });
+    poleMark(sh, ix, 55, main ? main.poles : 4);
+    sh.line(ix, busY, x0 + nCols * colW, busY, { sw: 1.2 });
+    sh.text(ix - 2, busY - 2, 'L1,L2,L3,N,PE', { size: 2.3, anchor: 'end' });
+    // tabulka dole
+    const tY = 175, rowsT = ['Označení', 'Přístroj', 'Fáze', 'P [kW]', 'Ib [A]', 'Kabel', 'Délka [m]', 'ΔU [%]', 'Okruh'];
+    rowsT.forEach((r, i) => { sh.text(8, tY + 4 + i * 8, r, { size: 2.5, weight: 'bold' }); sh.line(7, tY + i * 8, x0 + nCols * colW, tY + i * 8, { sw: 0.15 }); });
+    sh.line(7, tY + rowsT.length * 8, x0 + nCols * colW, tY + rowsT.length * 8, { sw: 0.15 });
+    let col = 0;
+    for (const g of G) {
+      const gx = x0 + col * colW;
+      if (g.head) {
+        const cx = gx + (g.cols * colW) / 2 - colW / 2 + colW / 2;
+        const hx = gx + colW / 2;
+        sh.circle(hx, busY, 0.9, { fill: '#000' });
+        sh.line(hx, busY, hx, busY + 8, { sw: 0.4 });
+        symRCD(sh, hx, busY + 8, g.head);
+        sh.text(hx + 6, busY + 14, g.head.bmk, { size: 2.6, weight: 'bold' });
+        sh.text(hx + 6, busY + 18, g.head.In + 'A/' + g.head.IdN + 'mA ' + g.head.rcdType, { size: 2.3 });
+        sh.line(hx, busY + 26, hx, busY + 34, { sw: 0.4 });
+        sh.line(hx, busY + 34, gx + (g.cols - 0.5) * colW, busY + 34, { sw: 0.8 });
+        void cx;
+        g.items.forEach((d, i) => { const x = gx + (i + 0.5) * colW; outgoing(sh, d, x, busY + 34, calc, tY); });
+        if (!g.items.length) sh.text(hx, busY + 40, '(bez vývodů)', { size: 2.2, anchor: 'middle' });
+      } else {
+        const d = g.items[0], x = gx + colW / 2;
+        sh.circle(x, busY, 0.9, { fill: '#000' });
+        outgoing(sh, d, x, busY, calc, tY, true);
+      }
+      col += g.cols;
+    }
+    return sh;
+  }
+
+  function poleMark(sh, x, y, n) {
+    if (!n || n < 2) return;
+    for (let i = 0; i < Math.min(n, 4); i++) sh.line(x - 2, y + 2 + i * 1.5, x + 2, y - 1 + i * 1.5, { sw: 0.3 });
+    sh.text(x + 3, y + 3, n, { size: 2.2 });
+  }
+  function symBreaker(sh, x, y, len, kind) {
+    // vertikální jistič: spodní pevný kontakt, šikmý nůž, × na horním kontaktu
+    sh.line(x, y, x, y + 4, { sw: 0.4 });
+    if (kind === 'fuse') { sh.rect(x - 1.8, y + 4, 3.6, 10, { sw: 0.35 }); sh.line(x, y + 4, x, y + 14, { sw: 0.3 }); sh.line(x, y + 14, x, y + len, { sw: 0.4 }); return; }
+    sh.line(x - 1.5, y + 2.5, x + 1.5, y + 5.5, { sw: 0.35 }); sh.line(x + 1.5, y + 2.5, x - 1.5, y + 5.5, { sw: 0.35 });
+    sh.line(x, y + 12, x - 4, y + 5, { sw: 0.4 });
+    sh.line(x, y + 12, x, y + len, { sw: 0.4 });
+    if (kind === 'contactor') { sh.circle(x, y + 4.8, 0.9); }
+  }
+  function symDisconnector(sh, x, y, d) {
+    sh.line(x, y, x, y + 4, { sw: 0.5 });
+    sh.line(x - 1.8, y + 4, x + 1.8, y + 4, { sw: 0.5 });
+    sh.line(x, y + 12, x - 4.5, y + 4.5, { sw: 0.5 });
+    sh.line(x, y + 12, x, y + 18, { sw: 0.5 });
+    void d;
+  }
+  function symRCD(sh, x, y, d) {
+    sh.line(x, y, x, y + 2, { sw: 0.4 });
+    sh.line(x, y + 9, x - 4, y + 2, { sw: 0.4 });
+    sh.line(x, y + 9, x, y + 18, { sw: 0.4 });
+    // součtový transformátor
+    sh.rect(x - 3, y + 13, 6, 3, { sw: 0.35, rx: 1.5 });
+    sh.line(x - 3, y + 14.5, x - 6, y + 14.5, { sw: 0.25, dash: '0.8 0.6' });
+    sh.line(x - 6, y + 14.5, x - 6, y + 6, { sw: 0.25, dash: '0.8 0.6' });
+    sh.line(x - 6, y + 6, x - 2, y + 6, { sw: 0.25, dash: '0.8 0.6' });
+    void d;
+  }
+  function outgoing(sh, d, x, y, calc, tY, fromBus) {
+    sh.line(x, y, x, y + (fromBus ? 42 : 8), { sw: 0.4 });
+    const sy = y + (fromBus ? 42 : 8);
+    const r = calc && calc.circuits[d.id];
+    const kind = d.type === 'fuse' ? 'fuse' : d.type === 'contactor' ? 'contactor' : 'mcb';
+    if (d.type === 'spd') {
+      sh.rect(x - 3, sy, 6, 10, { sw: 0.35 }); sh.line(x - 2, sy + 8, x + 2, sy + 2, { sw: 0.3 });
+      sh.line(x, sy + 10, x, sy + 16, { sw: 0.4 }); sh.line(x - 3, sy + 16, x + 3, sy + 16, { sw: 0.4 }); sh.line(x - 2, sy + 17, x + 2, sy + 17, { sw: 0.4 }); sh.line(x - 1, sy + 18, x + 1, sy + 18, { sw: 0.4 });
+    } else if (!d.circuit) {
+      sh.rect(x - 4, sy, 8, 10, { sw: 0.35 }); sh.text(x, sy + 6.5, D.DEVICE_TYPES[d.type].bmk, { size: 2.6, anchor: 'middle' });
+      sh.line(x, sy + 10, x, tY - 5, { sw: 0.4 });
+    } else {
+      symBreaker(sh, x, sy, 16, kind);
+      if (d.type === 'rcbo') { sh.rect(x - 3, sy + 12, 6, 3, { sw: 0.35, rx: 1.5 }); }
+      poleMark(sh, x, sy + 22, d.poles);
+      sh.line(x, sy + 16, x, tY - 8, { sw: 0.4 });
+      // šipka vývodu
+      sh.poly([[x - 1.5, tY - 8], [x + 1.5, tY - 8], [x, tY - 5]], { fill: '#000', stroke: 'none' });
+    }
+    sh.text(x + (d.type === 'spd' ? 4 : 2.5), sy + 9, d.bmk || '', { size: 2.4, weight: 'bold' });
+    const c = d.circuit || {};
+    const vals = [d.bmk || '', rating(d), r ? r.phase : '', c.P != null && d.circuit ? c.P : '', r ? r.Ib.toFixed(1) : '',
+      d.circuit ? c.cable : '', d.circuit ? c.len : '', r ? r.dUtot.toFixed(2) : '', cname(d, 'cz')];
+    vals.forEach((v, i) => {
+      const fill = (i === 7 && r && r.dUtot > r.dULim) ? '#c00' : '#000';
+      if (i === 8) wrap(v, 12, 2).forEach((ln, k) => sh.text(x, tY + 3.6 + i * 8 + k * 2.8, ln, { size: 2.0, anchor: 'middle' }));
+      else sh.text(x, tY + 5 + i * 8, v, { size: i === 5 ? 1.9 : 2.3, anchor: 'middle', fill });
+    });
+    if (r && !r.ok) sh.text(x, y + 6 + (fromBus ? 30 : 0), '⚠', { size: 4, anchor: 'middle', fill: '#c00' });
+  }
+
+  // ---------- vícepólové schéma ----------
+  function multiLine(b, calc) {
+    const m = b.meta, G = groups(b);
+    const colW = 30, x0 = 70;
+    const nCols = G.reduce((a, g) => a + g.cols, 0);
+    const W = Math.max(420, x0 + nCols * colW + 30), H = 297;
+    const sh = new Sheet(W, H);
+    titleBlock(sh, b, 'Vícepólové schéma / Stromlaufplan', 2);
+    const RY = { L1: 45, L2: 51, L3: 57, N: 63, PE: 69 };
+    const RC = { L1: '#7b3f00', L2: '#000', L3: '#868e96', N: '#1c7ed6', PE: '#2f9e44' };
+    const xEnd = x0 + nCols * colW;
+    const main = b.devices.find(d => d.type === 'main');
+    // přívod + hlavní vypínač
+    const mph = ['L1', 'L2', 'L3', 'N'];
+    const mx = 22;
+    mph.forEach((p, i) => {
+      const x = mx + i * 5;
+      sh.text(x, 14, p, { size: 2.2, anchor: 'middle', fill: RC[p] });
+      sh.line(x, 16, x, 22, { stroke: RC[p], sw: 0.35 });
+      const switched = main && (main.poles >= 4 || (p !== 'N' && main.poles >= 3) || (main.poles === 2 && (p === 'L1' || p === 'N')) || (main.poles === 1 && p === 'L1'));
+      if (switched) { sh.line(x - 1.2, 22, x + 1.2, 22, { sw: 0.35 }); sh.line(x, 30, x - 3, 23, { sw: 0.35, stroke: RC[p] }); }
+      else sh.line(x, 22, x, 30, { stroke: RC[p], sw: 0.35 });
+      sh.line(x, 30, x, RY[p], { stroke: RC[p], sw: 0.35 });
+      sh.circle(x, RY[p], 0.7, { fill: RC[p], stroke: 'none' });
+    });
+    sh.text(mx - 4, 14, 'PE', { size: 2.2, anchor: 'middle', fill: RC.PE });
+    sh.line(mx - 4, 16, mx - 4, RY.PE, { stroke: RC.PE, sw: 0.35 }); sh.circle(mx - 4, RY.PE, 0.7, { fill: RC.PE, stroke: 'none' });
+    if (main) { sh.line(mx - 1.5, 26.5, mx + 15, 26.5, { dash: '1 0.8', sw: 0.2 }); sh.text(mx + 18, 27, main.bmk + ' ' + main.In + 'A', { size: 2.6, weight: 'bold' }); }
+    for (const p in RY) { sh.line(mx - 6, RY[p], xEnd, RY[p], { stroke: RC[p], sw: 0.6 }); sh.text(xEnd + 2, RY[p] + 0.9, p, { size: 2.4, fill: RC[p] }); }
+
+    const outY = 222;
+    let col = 0;
+    for (const g of G) {
+      const gx = x0 + col * colW;
+      if (g.head) {
+        const r = g.head;
+        r._ph = (g.items[0] && g.items[0].circuit && g.items[0].circuit.phase !== 'L123' && g.items[0].circuit.phase) || 'L1';
+        const ph = phaseList(r);
+        const hx = gx + 4;
+        const subY = {};
+        ph.forEach((p, i) => {
+          const x = hx + i * 5;
+          sh.circle(x, RY[p], 0.7, { fill: RC[p], stroke: 'none' });
+          sh.line(x, RY[p], x, 80, { stroke: RC[p], sw: 0.35 });
+          sh.line(x, 88, x - 3, 81, { sw: 0.35, stroke: RC[p] });
+          sh.line(x, 88, x, 100 + i * 5, { stroke: RC[p], sw: 0.35 });
+          subY[p] = 100 + i * 5;
+          sh.line(x, subY[p], gx + (g.cols - 0.2) * colW, subY[p], { stroke: RC[p], sw: 0.45 });
+        });
+        sh.rect(hx - 2.5, 90, (ph.length - 1) * 5 + 5, 4, { sw: 0.3, rx: 2 });
+        sh.line(hx - 2, 84.5, hx + (ph.length - 1) * 5 + 2, 84.5, { dash: '1 0.8', sw: 0.2 });
+        sh.text(hx + ph.length * 5 + 1, 85, r.bmk, { size: 2.6, weight: 'bold' });
+        sh.text(hx + ph.length * 5 + 1, 89, r.In + 'A ' + r.IdN + 'mA ' + r.rcdType, { size: 2.1 });
+        g.items.forEach((d, i) => mlOutgoing(sh, d, gx + i * colW + 6, subY, RY, RC, outY, calc, 125));
+      } else {
+        mlOutgoing(sh, g.items[0], gx + 6, RY, RY, RC, outY, calc, 80);
+      }
+      col += g.cols;
+    }
+    return sh;
+  }
+
+  function mlOutgoing(sh, d, x0, srcY, RY, RC, outY, calc, devY) {
+    const ph = phaseList(d);
+    const switched = d.type === 'mcb' || d.type === 'rcbo' || d.type === 'fuse' || d.type === 'contactor';
+    const nOnly = d.circuit && !ph.includes('N');
+    let xi = 0;
+    const xs = {};
+    ph.forEach((p) => {
+      const x = x0 + xi * 4; xi++; xs[p] = x;
+      const y0 = srcY[p] != null ? srcY[p] : RY[p];
+      sh.circle(x, y0, 0.7, { fill: RC[p], stroke: 'none' });
+      sh.line(x, y0, x, devY, { stroke: RC[p], sw: 0.35 });
+      if (d.type === 'spd') { sh.rect(x - 1.3, devY, 2.6, 7, { sw: 0.3 }); sh.line(x, devY + 7, x, devY + 12, { sw: 0.3 }); return; }
+      if (switched) {
+        if (d.type === 'fuse') sh.rect(x - 1.2, devY, 2.4, 8, { sw: 0.3 });
+        else { sh.line(x - 1, devY + 1, x + 1, devY + 3, { sw: 0.25 }); sh.line(x + 1, devY + 1, x - 1, devY + 3, { sw: 0.25 }); sh.line(x, devY + 9, x - 2.7, devY + 3, { sw: 0.35, stroke: RC[p] }); }
+        sh.line(x, devY + 9, x, outY, { stroke: RC[p], sw: 0.35 });
+      } else {
+        sh.rect(x - 1.3, devY, 2.6, 8, { sw: 0.3 }); sh.line(x, devY + 8, x, outY, { stroke: RC[p], sw: 0.35 });
+      }
+      sh.circle(x, outY, 0.8, { fill: '#fff', sw: 0.3 });
+      sh.text(x, outY + 4, p, { size: 1.8, anchor: 'middle', fill: RC[p] });
+    });
+    if (d.type === 'spd') {
+      const xm = x0 + (ph.length - 1) * 2;
+      sh.line(x0, devY + 12, x0 + (ph.length - 1) * 4, devY + 12, { sw: 0.3 });
+      sh.line(xm, devY + 12, xm, RY.PE, { stroke: RC.PE, sw: 0.35 });
+      sh.text(x0 + ph.length * 4, devY + 6, d.bmk, { size: 2.4, weight: 'bold' });
+      return;
+    }
+    if (switched && ph.length > 1) sh.line(x0 - 1.5, devY + 5.5, x0 + (ph.length - 1) * 4 + 0.5, devY + 5.5, { dash: '1 0.8', sw: 0.2 });
+    // N nespínaný a PE
+    const xn = x0 + xi * 4;
+    if (d.circuit && nOnly && C.phasesOf(d) === 1) {
+      const nY = srcY.N != null ? srcY.N : RY.N;
+      sh.circle(xn, nY, 0.7, { fill: RC.N, stroke: 'none' }); sh.line(xn, nY, xn, outY, { stroke: RC.N, sw: 0.35 });
+      sh.circle(xn, outY, 0.8, { fill: '#fff', sw: 0.3 }); sh.text(xn, outY + 4, 'N', { size: 1.8, anchor: 'middle', fill: RC.N }); xi++;
+    }
+    if (d.circuit) {
+      const xp = x0 + xi * 4;
+      sh.circle(xp, RY.PE, 0.7, { fill: RC.PE, stroke: 'none' }); sh.line(xp, RY.PE, xp, outY, { stroke: RC.PE, sw: 0.3, dash: '2 0.8' });
+      sh.circle(xp, outY, 0.8, { fill: '#fff', sw: 0.3 }); sh.text(xp, outY + 4, 'PE', { size: 1.8, anchor: 'middle', fill: RC.PE });
+    }
+    sh.text(x0 - 2, devY + 18, d.bmk || '', { size: 2.5, weight: 'bold', rot: -90, anchor: 'end' });
+    sh.text(x0 + 1, devY + 18, rating(d), { size: 2.1, rot: -90, anchor: 'end' });
+    if (d.circuit) {
+      sh.text(x0 + 4, outY - 3, d.circuit.cable + '  ' + d.circuit.len + ' m', { size: 1.9, rot: -90 });
+      wrap(cname(d, 'cz'), 18, 2).forEach((ln, i) => sh.text(x0 + 8 + i * 2.6, outY + 9, ln, { size: 2.0, rot: -90, anchor: 'end' }));
+    } else sh.text(x0 + 8, outY + 9, cname(d, 'cz'), { size: 2.0, rot: -90, anchor: 'end' });
+  }
+
+  // ---------- popisky 1:1 ----------
+  function labelStrips(b) {
+    const m = b.meta, rows = +m.rows, mods = +m.modules;
+    const h = 14, gap = 8;
+    const sh = new Sheet(mods * M + 20, rows * (h + gap) + 14);
+    sh.text(10, 6, 'Popisové pruhy 1:1 – ' + m.name + ' (tisknout 100 %, bez přizpůsobení stránce)', { size: 2.8 });
+    for (let r = 1; r <= rows; r++) {
+      const y0 = 10 + (r - 1) * (h + gap);
+      sh.text(8, y0 + h / 2 + 1, r, { size: 3, anchor: 'end' });
+      sh.rect(10, y0, mods * M, h, { sw: 0.2 });
+      let x = 10;
+      for (const d of b.devices.filter(d => +d.row === r)) {
+        const w = C.width(d) * M;
+        const lines = wrap(cname(d, m.lang), Math.max(4, Math.floor(w / 1.45)), 3);
+        sh.text(x + w / 2, y0 + 3.4, (d.bmk || '') + (rating(d) && d.type !== 'spacer' ? ' ' + rating(d) : ''), { size: 2.2, anchor: 'middle', weight: 'bold' });
+        lines.forEach((ln, i) => sh.text(x + w / 2, y0 + 6.8 + i * 2.6, ln, { size: 2.0, anchor: 'middle' }));
+        x += w; sh.line(x, y0, x, y0 + h, { sw: 0.15 });
+      }
+    }
+    return sh;
+  }
+
+  function warnTriangle(sh, x, y, s) {
+    sh.poly([[x, y + s], [x + s / 2, y], [x + s, y + s]], { fill: '#ffd43b', sw: s / 25 });
+    const k = s / 20;
+    sh.poly([[x + s * 0.53, y + 5 * k], [x + s * 0.38, y + 12 * k], [x + s * 0.5, y + 12 * k], [x + s * 0.44, y + 18 * k], [x + s * 0.62, y + 10 * k], [x + s * 0.5, y + 10 * k]], { fill: '#000', stroke: 'none' });
+  }
+
+  function nameplate(b, calc) {
+    const m = b.meta, T = k => tr(m, k);
+    const W = 105, H = 74;
+    const sh = new Sheet(W + 10, H + 10 + 40);
+    const x = 5, y = 5;
+    sh.rect(x, y, W, H, { sw: 0.4, rx: 2 });
+    sh.rect(x, y, W, 9, { fill: '#212529', stroke: 'none' });
+    sh.text(x + W / 2, y + 6.3, T('plate'), { size: 3.6, anchor: 'middle', fill: '#fff', weight: 'bold' });
+    const rows = [
+      [T('manufacturer'), m.manufacturer],
+      [T('type'), (m.type || m.name) + ' ' + (m.bmk || '')],
+      [T('serial') + ' / ' + T('date'), (m.serial || '—') + ' / ' + (m.date || '')],
+      [T('standard'), 'EN IEC 61439-1, -' + (m.standard === '61439-2' ? '2' : '3') + (m.standard === '61439-3' ? ' (DBO)' : ' (PSC)')],
+      [T('Un') + ' / ' + T('fn'), '3/N/PE AC ' + m.Un + '/' + m.U0 + ' V ' + m.fn + ' Hz'],
+      [T('Ui') + ' / Uimp', m.Ui + ' V / ' + m.Uimp + ' kV'],
+      [T('InA'), (calc.InA || '—') + ' A'],
+      [m.standard === '61439-3' ? T('Icc') : T('Icw'), m.Icc + ' kA'],
+      [T('RDF'), String(calc.RDF).replace('.', ',')],
+      [T('network') + ' / ' + T('IP') + ' / ' + T('IK'), m.network + ' / ' + m.IP + ' / ' + m.IK],
+    ];
+    if (m.weight) rows.push([T('weight'), m.weight + ' kg']);
+    rows.forEach((r, i) => {
+      const yy = y + 14 + i * 5.6;
+      sh.text(x + 3, yy, r[0], { size: 2.3 });
+      sh.text(x + W - 3, yy, r[1] || '', { size: 2.6, anchor: 'end', weight: 'bold' });
+      sh.line(x + 2, yy + 1.4, x + W - 2, yy + 1.4, { sw: 0.1, stroke: '#adb5bd' });
+    });
+    if (m.ce) { sh.text(x + W - 4, y + H - 2.5, 'CE', { size: 6, anchor: 'end', weight: 'bold' }); }
+    sh.text(x + 3, y + H - 3, m.standard === '61439-3' ? T('ordinary') : T('skilled'), { size: 2.1 });
+    // výstražný štítek
+    const wy = y + H + 6;
+    sh.rect(x, wy, W, 30, { sw: 0.4, rx: 2 });
+    warnTriangle(sh, x + 4, wy + 4, 22);
+    sh.text(x + 32, wy + 12, T('warn'), { size: 3.4, weight: 'bold' });
+    sh.text(x + 32, wy + 18, T('warn2'), { size: 2.8 });
+    sh.text(x + 32, wy + 25, T('board') + ' ' + (m.bmk || '') + '  ' + m.U0 + '/' + m.Un + ' V', { size: 2.8 });
+    return sh;
+  }
+
+  function circuitList(b, calc) {
+    const m = b.meta, lang = m.lang;
+    const H = { cz: ['Označ.', 'Okruh', 'Jištění', 'Chránič', 'Fáze', 'Kabel', 'Délka'], de: ['BMK', 'Stromkreis', 'Absicherung', 'FI', 'Phase', 'Kabel', 'Länge'], en: ['Ref.', 'Circuit', 'Protection', 'RCD', 'Phase', 'Cable', 'Length'] }[lang] || [];
+    const title = { cz: 'Seznam okruhů', de: 'Stromkreisliste', en: 'Circuit schedule' }[lang];
+    const outs = b.devices.filter(d => d.circuit);
+    const X = [5, 22, 75, 100, 125, 140, 180], rowH = 6;
+    const sh = new Sheet(200, 26 + outs.length * rowH + 10);
+    sh.text(5, 8, title + ' – ' + m.name + ' ' + (m.bmk || ''), { size: 4, weight: 'bold' });
+    sh.text(5, 13, m.network + ' ' + m.U0 + '/' + m.Un + ' V, InA = ' + (calc.InA || '—') + ' A, ' + (m.date || ''), { size: 2.6 });
+    const y0 = 20;
+    sh.rect(4, y0 - 4.5, 192, rowH, { fill: '#e9ecef', sw: 0.2 });
+    H.forEach((h, i) => sh.text(X[i], y0, h, { size: 2.6, weight: 'bold' }));
+    outs.forEach((d, k) => {
+      const r = calc.circuits[d.id], yy = y0 + (k + 1) * rowH;
+      const vals = [d.bmk, d.circuit.name, rating(d), r.rcd || '—', r.phase, d.circuit.cable, d.circuit.len + ' m'];
+      vals.forEach((v, i) => sh.text(X[i], yy, i === 1 ? wrap(v, 30, 1)[0] || '' : v, { size: 2.5 }));
+      sh.line(4, yy + 1.6, 196, yy + 1.6, { sw: 0.1, stroke: '#adb5bd' });
+    });
+    return sh;
+  }
+
+  root.RDraw = { Sheet, toSVG, toDXF, front, singleLine, multiLine, labelStrips, nameplate, circuitList, rating, cname, M };
+})(typeof window !== 'undefined' ? window : globalThis);
+
+</script>
+<script>
+/* Uživatelské rozhraní – běží čistě v prohlížeči, bez serveru a bez internetu. */
+(function () {
+  'use strict';
+  const D = window.RData, C = window.RCalc, R = window.RDraw;
+  const $ = s => document.querySelector(s);
+  const KEY = 'rozvadec.board.v1';
+  let B = load() || D.templateRD();
+  let calc = null, sel = null, tab = 'board';
+
+  // ---------- ukládání ----------
+  function load() { try { const s = localStorage.getItem(KEY); return s ? JSON.parse(s) : null; } catch (e) { return null; } }
+  function persist() { try { localStorage.setItem(KEY, JSON.stringify(B)); } catch (e) { /* např. režim soukromí */ } }
+  function download(name, data, type) {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([data], { type: type || 'application/octet-stream' }));
+    a.download = name; document.body.appendChild(a); a.click();
+    setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+  }
+  const fname = ext => (B.meta.bmk || B.meta.name || 'rozvadec').replace(/[^\w\-=.]+/g, '_').replace(/^=/, '') + ext;
+  const esc = s => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  const fx = (v, n) => (v == null || !isFinite(v)) ? '—' : (+v).toFixed(n == null ? 1 : n).replace('.', ',');
+
+  // ---------- záložka 1: parametry rozváděče ----------
+  const META_FIELDS = [
+    ['Identifikace'],
+    ['name', 'Název rozváděče'], ['bmk', 'Označení (např. =RD1, =UV2)'], ['project', 'Zakázka / projekt'], ['location', 'Umístění'],
+    ['manufacturer', 'Výrobce rozváděče (kdo jej sestavil)', '', 'Dle EN 61439 je „výrobcem“ ten, kdo rozváděč kompletuje – tj. často elektrikář/firma.'],
+    ['type', 'Typové označení'], ['serial', 'Výrobní číslo'], ['date', 'Datum výroby', 'date'], ['author', 'Zpracoval'],
+    ['lang', 'Jazyk štítků a popisků', [['cz', 'Čeština'], ['de', 'Deutsch'], ['en', 'English']]],
+    ['Napájení'],
+    ['network', 'Soustava', D.NETWORKS.map(n => [n, n])],
+    ['U0', 'U0 fáze–zem [V]', 'number'], ['Un', 'Un sdružené [V]', 'number'], ['fn', 'Kmitočet [Hz]', 'number'],
+    ['Ze', 'Impedance smyčky na přívodu Ze [Ω]', 'number', 'Změřit na svorkách přívodu nebo údaj od distributora. U TT zadejte RA.'],
+    ['Ik3', 'Zkratový proud na přípojnici Ik3 [kA]', 'number', 'Pro kontrolu vypínací schopnosti Icn.'],
+    ['dUfeed', 'Úbytek napětí na přívodu [%]', 'number', 'Úbytek od elektroměru k rozváděči – přičítá se ke každému vývodu.'],
+    ['Skříň a štítek (EN 61439)'],
+    ['standard', 'Norma rozváděče', [['61439-3', 'EN 61439-3 – DBO (obsluha laiky, byty/RD)'], ['61439-2', 'EN 61439-2 – PSC (výkonové, obsluha znalými)']]],
+    ['rows', 'Počet řad', 'number'], ['modules', 'Modulů v řadě (1 M = 17,5 mm)', 'number'],
+    ['Pde', 'Ztrátový výkon skříně Pde [W]', 'number', 'Z katalogu výrobce skříně – max. ztrátový výkon pro ověření oteplení.'],
+    ['IP', 'Krytí IP'], ['IK', 'Mechanická odolnost IK'], ['Ui', 'Izolační napětí Ui [V]', 'number'], ['Uimp', 'Uimp [kV]', 'number'],
+    ['Icc', 'Icc / Icw na štítek [kA]', 'number', 'U DBO podmíněný zkratový proud (Icc) – musí být ≥ Ik3 na místě instalace.'],
+    ['weight', 'Hmotnost [kg] (volitelně)'],
+    ['ce', 'Značka CE na štítku', [['', 'ne'], ['1', 'ano']]]
+  ];
+  function renderBoard() {
+    const el = $('#boardForm'); let h = '';
+    for (const fdef of META_FIELDS) {
+      if (fdef.length === 1) { h += '<h3>' + fdef[0] + '</h3>'; continue; }
+      const [k, lab, type, hint] = fdef, v = B.meta[k] == null ? '' : B.meta[k];
+      let inp;
+      if (Array.isArray(type)) inp = '<select data-m="' + k + '">' + type.map(o => '<option value="' + o[0] + '"' + (String(v) === String(o[0]) ? ' selected' : '') + '>' + esc(o[1]) + '</option>').join('') + '</select>';
+      else inp = '<input data-m="' + k + '" type="' + (type === 'number' ? 'number' : type === 'date' ? 'date' : 'text') + '"' + (type === 'number' ? ' step="any"' : '') + ' value="' + esc(v) + '">';
+      h += '<label class="f">' + esc(lab) + inp + (hint ? '<small>' + esc(hint) + '</small>' : '') + '</label>';
+    }
+    el.innerHTML = h;
+  }
+  $('#boardForm').addEventListener('change', e => {
+    const k = e.target.dataset.m; if (!k) return;
+    const v = e.target.type === 'number' ? C.num(e.target.value) : e.target.value;
+    B.meta[k] = v; update();
+  });
+
+  // ---------- záložka 2: přístroje ----------
+  const ADD = [['main', 'Hlavní vypínač'], ['rcd', 'Chránič (RCD)'], ['mcb', 'Jistič 1f'], ['mcb3', 'Jistič 3f'], ['rcbo', 'RCBO'], ['fuse', 'Pojistky'], ['spd', 'SPD'], ['contactor', 'Stykač'], ['relay', 'Relé'], ['meter', 'Elektroměr'], ['psu', 'Zdroj'], ['terminal', 'Svorky'], ['spacer', 'Rezerva']];
+  $('#addbar').innerHTML = '<b>Přidat:</b> ' + ADD.map(a => '<button data-add="' + a[0] + '">+ ' + a[1] + '</button>').join('') +
+    '<span class="sep"></span><button data-act="balance" title="Rozdělí 1f vývody na L1/L2/L3 podle soudobého výkonu">⚖ Vyvážit fáze</button>' +
+    '<button data-act="renum" title="Přečísluje -Q, -F, -K… podle pořadí v řadách">№ Přečíslovat BMK</button>' +
+    '<button data-act="autoS" title="U všech vývodů navrhne nejmenší vyhovující průřez">⌀ Navrhnout průřezy</button>';
+  $('#addbar').addEventListener('click', e => {
+    const t = e.target.dataset.add; if (!t) return;
+    const lastRow = B.devices.length ? B.devices[B.devices.length - 1].row : 1;
+    const rcds = B.devices.filter(d => d.type === 'rcd');
+    let d;
+    if (t === 'mcb3') d = D.dev('mcb', { poles: 3, char: 'C', circuit: D.newCircuit({ kind: 'motor', phase: 'L123', P: 5.5, cos: 0.85, cable: 'CYKY-J 5x2,5' }) });
+    else d = D.dev(t, {});
+    d.row = lastRow;
+    if (t === 'rcd') d.In = 40;
+    if (t === 'main') d.In = 40;
+    if ((t === 'mcb') && rcds.length) d.parent = rcds[rcds.length - 1].id;
+    if (sel) { const i = B.devices.findIndex(x => x.id === sel); const s = B.devices[i]; d.row = s.row; if (s.type === 'rcd' && t === 'mcb') d.parent = s.id; else if (s.parent && t === 'mcb') d.parent = s.parent; B.devices.splice(i + 1, 0, d); }
+    else B.devices.push(d);
+    autoBmk(d); sel = d.id; update();
+  });
+  function autoBmk(d) {
+    const L = D.DEVICE_TYPES[d.type].bmk; if (!L) return;
+    let n = 1; const used = new Set(B.devices.map(x => x.bmk));
+    while (used.has('-' + L + n)) n++;
+    d.bmk = '-' + L + n;
+  }
+
+  const opt = (arr, v) => arr.map(o => { const [val, lab] = Array.isArray(o) ? o : [o, o]; return '<option value="' + esc(val) + '"' + (String(val) === String(v) ? ' selected' : '') + '>' + esc(lab) + '</option>'; }).join('');
+  function renderDevices() {
+    const rcds = B.devices.filter(d => d.type === 'rcd');
+    const rows = Array.from({ length: Math.max(1, C.num(B.meta.rows, 1)) }, (_, i) => i + 1);
+    let h = '<thead><tr><th class="grp" colspan="11">Přístroj</th><th class="grp" colspan="13">Vývod / kabel</th><th class="grp" colspan="2"></th></tr><tr>' +
+      ['', 'Řada', 'BMK', 'Typ', 'Pól', 'In [A]', 'Char.', 'Icn [kA]', 'IΔn [mA]', 'RCD typ', 'Za chráničem',
+        'Název okruhu / popisek', 'Druh zátěže', 'P [kW]', 'cos φ', 'ks', 'Fáze', 'Kabel', 'S [mm²]', 'S PE', 'Délka [m]', 'Uložení', 'Svazek', 't [°C]', 'Stav', ''].map(x => '<th>' + x + '</th>').join('') + '</tr></thead><tbody>';
+    B.devices.forEach((d, i) => {
+      const t = D.DEVICE_TYPES[d.type], c = d.circuit, r = calc && calc.circuits[d.id];
+      const has = k => {
+        if (k === 'char') return ['mcb', 'rcbo'].includes(d.type);
+        if (k === 'Icn') return ['mcb', 'rcbo', 'main'].includes(d.type);
+        if (k === 'IdN') return t.rcd;
+        if (k === 'In') return !['spacer', 'terminal', 'relay', 'psu', 'meter'].includes(d.type);
+        return true;
+      };
+      const cell = (k, html) => has(k) ? '<td>' + html + '</td>' : '<td class="na">–</td>';
+      let st = '';
+      if (r) {
+        const lvl = r.msgs.some(m => m.lvl === 'err') ? 'err' : r.msgs.some(m => m.lvl === 'warn') ? 'warn' : 'ok';
+        st = '<span class="st ' + lvl + '" title="' + esc(r.msgs.map(m => m.m).join('\n') || 'Vyhovuje') + '">' + (lvl === 'ok' ? '✔' : lvl === 'warn' ? '!' : '✖') + '</span>';
+      }
+      h += '<tr data-id="' + d.id + '" class="' + (d.id === sel ? 'sel ' : '') + (d.type === 'rcd' ? 'rcdrow' : '') + '">' +
+        '<td><button data-mv="-1" title="Nahoru">↑</button><button data-mv="1" title="Dolů">↓</button></td>' +
+        '<td><select data-k="row">' + opt(rows, d.row) + '</select></td>' +
+        '<td><input class="n" data-k="bmk" value="' + esc(d.bmk) + '"></td>' +
+        '<td>' + esc(t.name) + '</td>' +
+        '<td><select data-k="poles">' + opt(t.poles, d.poles) + '</select></td>' +
+        cell('In', '<select data-k="In">' + opt([2, 4, 6, 10, 13, 16, 20, 25, 32, 40, 50, 63, 80, 100, 125, 160], d.In) + '</select>') +
+        cell('char', '<select data-k="char">' + opt(['B', 'C', 'D', 'K', 'Z'], d.char) + '</select>') +
+        cell('Icn', '<select data-k="Icn">' + opt([3, 4.5, 6, 10, 15, 25], d.Icn) + '</select>') +
+        cell('IdN', '<select data-k="IdN">' + opt([10, 30, 100, 300, 500], d.IdN) + '</select>') +
+        cell('IdN', '<select data-k="rcdType">' + opt(['AC', 'A', 'F', 'B', 'A-EV'], d.rcdType) + '</select>') +
+        (c ? '<td><select data-k="parent">' + opt([['', '—']].concat(rcds.map(x => [x.id, x.bmk + ' ' + x.IdN + 'mA'])), d.parent) + '</select></td>' : '<td class="na">–</td>');
+      if (c) {
+        h += '<td><input class="l" data-c="name" value="' + esc(c.name) + '"></td>' +
+          '<td><select data-c="kind">' + opt(Object.entries(D.LOAD_KINDS).map(([k, v]) => [k, v.cz]), c.kind) + '</select></td>' +
+          '<td><input class="n" type="number" step="any" data-c="P" value="' + esc(c.P) + '"></td>' +
+          '<td><input class="n" type="number" step="0.01" data-c="cos" value="' + esc(c.cos) + '"></td>' +
+          '<td><input class="n" type="number" step="0.05" data-c="ks" placeholder="' + (D.LOAD_KINDS[c.kind] || D.LOAD_KINDS.other).ks + '" value="' + esc(c.ks == null ? '' : c.ks) + '" title="Koeficient soudobosti – prázdné = výchozí podle druhu zátěže"></td>' +
+          '<td>' + (C.phasesOf(d) === 3 ? 'L1L2L3' : '<select data-c="phase">' + opt(['L1', 'L2', 'L3'], c.phase) + '</select>') + '</td>' +
+          '<td><input class="m" data-c="cable" value="' + esc(c.cable) + '"></td>' +
+          '<td><select data-c="S">' + opt(D.SECTIONS, c.S) + '</select></td>' +
+          '<td><select data-c="Spe">' + opt(D.SECTIONS, c.Spe) + '</select></td>' +
+          '<td><input class="n" type="number" step="any" data-c="len" value="' + esc(c.len) + '"></td>' +
+          '<td><select data-c="method" title="' + esc(D.METHODS[c.method]) + '">' + opt(Object.keys(D.METHODS).map(k => [k, D.METHODS[k]]), c.method) + '</select></td>' +
+          '<td><input class="n" type="number" min="1" data-c="group" value="' + esc(c.group) + '" title="Počet obvodů ve svazku"></td>' +
+          '<td><input class="n" type="number" data-c="temp" value="' + esc(c.temp) + '"></td>';
+      } else {
+        h += '<td><input class="l" data-k="label" value="' + esc(d.label) + '"></td>' + '<td class="na" colspan="12">–</td>';
+      }
+      h += '<td>' + st + '</td><td><button data-dup title="Duplikovat">⧉</button><button data-del title="Smazat">✕</button></td></tr>';
+    });
+    $('#devTable').innerHTML = h + '</tbody>';
+  }
+  $('#devTable').addEventListener('change', e => {
+    const tr = e.target.closest('tr'); if (!tr) return;
+    const d = B.devices.find(x => x.id === tr.dataset.id); if (!d) return;
+    const k = e.target.dataset.k, ck = e.target.dataset.c;
+    const numeric = ['row', 'poles', 'In', 'Icn', 'IdN'];
+    if (k) d[k] = numeric.includes(k) ? C.num(e.target.value) : e.target.value;
+    if (ck) {
+      const nk = ['P', 'cos', 'S', 'Spe', 'len', 'group', 'temp'];
+      let v = e.target.value;
+      if (ck === 'ks') v = v === '' ? null : C.num(v); else if (nk.includes(ck)) v = C.num(v);
+      d.circuit[ck] = v;
+      if (ck === 'kind') { const kk = D.LOAD_KINDS[v]; if (kk) d.circuit.cos = kk.cos; }
+      if (ck === 'S') { d.circuit.Spe = v <= 16 ? v : Math.max(16, v / 2); syncCableName(d); }
+    }
+    if (k === 'poles' && d.circuit) { d.circuit.phase = d.poles >= 3 ? 'L123' : (d.circuit.phase === 'L123' ? 'L1' : d.circuit.phase); syncCableName(d); }
+    update();
+  });
+  function syncCableName(d) {
+    const c = d.circuit; const m = /^(\S+)\s+(\d)x([\d,\.]+)/.exec(c.cable || '');
+    const cores = C.phasesOf(d) === 3 ? 5 : 3;
+    const s = String(c.S).replace('.', ',');
+    c.cable = (m ? m[1] : 'CYKY-J') + ' ' + cores + 'x' + s;
+  }
+  $('#devTable').addEventListener('click', e => {
+    const tr = e.target.closest('tr'); if (!tr || !tr.dataset.id) return;
+    const i = B.devices.findIndex(x => x.id === tr.dataset.id);
+    if (e.target.dataset.mv) {
+      const j = i + (+e.target.dataset.mv);
+      if (j >= 0 && j < B.devices.length) { const [x] = B.devices.splice(i, 1); B.devices.splice(j, 0, x); }
+      sel = tr.dataset.id; update(); return;
+    }
+    if (e.target.hasAttribute('data-del')) {
+      const id = B.devices[i].id;
+      B.devices.splice(i, 1); B.devices.forEach(x => { if (x.parent === id) x.parent = ''; });
+      sel = null; update(); return;
+    }
+    if (e.target.hasAttribute('data-dup')) {
+      const x = JSON.parse(JSON.stringify(B.devices[i])); x.id = 'd' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+      autoBmk(x); B.devices.splice(i + 1, 0, x); sel = x.id; update(); return;
+    }
+    if (sel !== tr.dataset.id) { sel = tr.dataset.id; document.querySelectorAll('#devTable tr').forEach(r => r.classList.toggle('sel', r.dataset.id === sel)); renderMini(); }
+  });
+  function clickSvg(e) {
+    const r = e.target.closest('[data-id]'); if (!r) return;
+    sel = r.dataset.id; switchTab('devices'); update();
+    const row = document.querySelector('#devTable tr[data-id="' + sel + '"]'); if (row) row.scrollIntoView({ block: 'center' });
+  }
+  $('#miniFront').addEventListener('click', clickSvg);
+  $('#frontOut').addEventListener('click', clickSvg);
+  function renderMini() { $('#miniFront').innerHTML = R.toSVG(R.front(B, { selected: sel })); }
+
+  // ---------- záložka 3: výpočty ----------
+  function renderCalc() {
+    const c = calc, m = B.meta;
+    const allMsgs = c.msgs.slice();
+    B.devices.filter(d => d.circuit).forEach(d => c.circuits[d.id].msgs.forEach(x => allMsgs.push({ lvl: x.lvl, m: (d.bmk || '') + ' ' + (d.circuit.name || '') + ': ' + x.m })));
+    let h = '<div class="cards">' + [
+      ['Instalovaný výkon', fx(c.Pinst, 1) + ' kW'], ['Soudobý výkon', fx(c.Psim, 1) + ' kW'],
+      ['Soudobý proud L1 / L2 / L3', fx(c.phases.L1, 1) + ' / ' + fx(c.phases.L2, 1) + ' / ' + fx(c.phases.L3, 1) + ' A'],
+      ['Nesymetrie fází', fx(c.unbalance, 0) + ' %'], ['InA (hlavní vypínač)', (c.InA || '—') + ' A'],
+      ['RDF dle EN ' + m.standard, fx(c.RDF, 1) + ' (' + c.nCircuits + ' vývodů)'],
+      ['Ztrátový výkon Pv / Pde', fx(c.Pv, 1) + ' / ' + (m.Pde || '—') + ' W'], ['Rezerva místa', c.reserve + ' M']
+    ].map(x => '<div class="card"><div class="k">' + x[0] + '</div><div class="v">' + x[1] + '</div></div>').join('') + '</div>';
+    h += '<ul class="msgs">' + (allMsgs.length ? allMsgs.map(x => '<li class="' + x.lvl + '">' + (x.lvl === 'err' ? '✖ ' : '! ') + esc(x.m) + '</li>').join('') : '<li class="ok">✔ Všechny kontroly vyhovují.</li>') + '</ul>';
+    h += '<table class="res"><thead><tr><th>BMK</th><th>Okruh</th><th>Fáze</th><th>P [kW]</th><th>ks</th><th>Ib [A]</th><th>In [A]</th><th>Iz [A]<br><small>(tab × kT × kG)</small></th><th>Ib≤In≤Iz</th>' +
+      '<th>ΔU [%]</th><th>ΔU celk. [%]</th><th>Zs [Ω]</th><th>Zs max [Ω]</th><th>Ik1 min [A]</th><th>Ia [A]</th><th>t odp. [s]</th><th>RCD</th><th>Pv [W]</th></tr></thead><tbody>';
+    for (const d of B.devices.filter(d => d.circuit)) {
+      const r = c.circuits[d.id], pv = c.pvList.find(p => p.id === d.id);
+      const k3 = r.Ib <= r.In && r.Iz != null && r.In <= r.Iz;
+      h += '<tr><td class="t"><b>' + esc(d.bmk) + '</b></td><td class="t">' + esc(d.circuit.name) + '</td><td>' + esc(r.phase) + '</td><td>' + fx(d.circuit.P, 2) + '</td><td>' + fx(r.ks, 2) + '</td>' +
+        '<td>' + fx(r.Ib) + '</td><td>' + esc(r.In) + '</td><td title="' + fx(r.IzBase) + ' × ' + fx(r.kT, 2) + ' × ' + fx(r.kG, 2) + '">' + fx(r.Iz) + '</td>' +
+        '<td class="' + (k3 ? 'good' : 'bad') + '">' + (k3 ? '✔' : '✖') + '</td>' +
+        '<td>' + fx(r.dU, 2) + '</td><td class="' + (r.dUtot > r.dULim ? 'bad' : 'good') + '">' + fx(r.dUtot, 2) + ' ≤ ' + r.dULim + '</td>' +
+        '<td>' + fx(r.Zs, 2) + '</td><td>' + fx(r.ZsMax, 2) + '</td><td class="' + (r.discOk === false ? 'bad' : 'good') + '">' + fx(r.Ik1, 0) + '</td>' +
+        '<td title="' + esc(r.iaHow) + '">' + fx(r.Ia, 0) + '</td><td>' + r.tReq + '</td><td class="t">' + esc(r.rcd || '—') + '</td><td>' + fx(pv && pv.p, 2) + '</td></tr>';
+    }
+    h += '</tbody></table>';
+    h += '<p class="hint" style="margin-top:10px">Předpoklady: Cu vodiče, izolace PVC 70 °C, ρ = 0,0225 Ω·mm²/m (70 °C), x = 0,08 mΩ/m, c<sub>min</sub> = 0,95. ' +
+      'Zatížitelnost dle IEC 60364-5-52 tab. B.52.2/B.52.4/B.52.10 (ČSN 33 2000-5-52, DIN VDE 0298-4 se může v některých hodnotách lišit). ' +
+      'Doba odpojení TN 230 V: koncové obvody ≤ 32 A 0,4 s, ostatní 5 s (ČSN 33 2000-4-41, VDE 0100-410). Ztrátové výkony přístrojů jsou typické – pro ověření oteplení dle EN 61439 použijte katalog výrobce. ' +
+      'Výpočet nenahrazuje měření při výchozí revizi (ČSN 33 2000-6 / DIN VDE 0100-600).</p>';
+    $('#calcOut').innerHTML = h;
+  }
+
+  // ---------- výkresy ----------
+  const SHEETS = {
+    front: () => R.front(B, {}), singleLine: () => R.singleLine(B, calc), multiLine: () => R.multiLine(B, calc),
+    labelStrips: () => R.labelStrips(B), nameplate: () => R.nameplate(B, calc), circuitList: () => R.circuitList(B, calc)
+  };
+  const SHEET_NAMES = { front: 'pohled', singleLine: 'jednopolove', multiLine: 'vicepolove', labelStrips: 'popisky', nameplate: 'stitek', circuitList: 'seznam_okruhu' };
+  document.querySelectorAll('.dl').forEach(el => {
+    const k = el.dataset.sheet;
+    el.innerHTML = '<button data-svg="' + k + '">⬇ SVG</button><button data-dxf="' + k + '">⬇ DXF (CAD)</button><button data-png="' + k + '">⬇ PNG</button><button data-pr="' + k + '">🖶 Tisk tohoto listu</button>';
+  });
+  document.addEventListener('click', e => {
+    const t = e.target.dataset;
+    if (t.svg) download(fname('_' + SHEET_NAMES[t.svg] + '.svg'), R.toSVG(SHEETS[t.svg](), { mm: true }), 'image/svg+xml');
+    if (t.dxf) download(fname('_' + SHEET_NAMES[t.dxf] + '.dxf'), R.toDXF(SHEETS[t.dxf]()), 'application/dxf');
+    if (t.png) toPNG(t.png);
+    if (t.pr) printSheet(t.pr);
+  });
+  function toPNG(k) {
+    const sh = SHEETS[k](), scale = 8; // 8 px/mm ≈ 200 dpi
+    const img = new Image();
+    img.onload = () => {
+      const cv = document.createElement('canvas'); cv.width = sh.w * scale; cv.height = sh.h * scale;
+      const g = cv.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, cv.width, cv.height); g.drawImage(img, 0, 0, cv.width, cv.height);
+      cv.toBlob(b => download(fname('_' + SHEET_NAMES[k] + '.png'), b, 'image/png'));
+    };
+    img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(R.toSVG(sh, { mm: true }));
+  }
+  function printSheet(k) {
+    const sh = SHEETS[k](), oneToOne = ['labelStrips', 'nameplate', 'circuitList'].includes(k);
+    const w = window.open('', '_blank');
+    if (!w) { alert('Prohlížeč zablokoval nové okno – povolte vyskakovací okna.'); return; }
+    const land = sh.w > sh.h;
+    w.document.write('<!doctype html><html><head><meta charset="utf-8"><title>' + esc(B.meta.name) + '</title><style>@page{size:' + (oneToOne ? 'A4 portrait' : (sh.w > 300 ? 'A3' : 'A4') + (land ? ' landscape' : ' portrait')) + ';margin:6mm}body{margin:0}svg{' + (oneToOne ? '' : 'width:100%;height:auto;max-height:100vh') + '}</style></head><body>' +
+      R.toSVG(sh, { mm: oneToOne }) + '<script>window.onload=function(){window.print()}<\/script></body></html>');
+    w.document.close();
+  }
+
+  // ---------- záložka 8: protokol ----------
+  const CHECKS = [
+    ['11.2', 'Stupeň ochrany krytem (IP)'], ['11.3', 'Vzdušné vzdálenosti a povrchové cesty'], ['11.4', 'Ochrana před úrazem el. proudem, spojitost ochranných obvodů'],
+    ['11.5', 'Vestavěné přístroje – typy, nastavení, označení dle dokumentace'], ['11.6', 'Vnitřní el. obvody a spoje – utahovací momenty'],
+    ['11.7', 'Svorky pro vnější vodiče'], ['11.8', 'Mechanická funkce ovládacích prvků'], ['11.9', 'Dielektrické vlastnosti (zkouška / měření Riso)'],
+    ['11.10', 'Zapojení, provozní funkce'], ['6.1', 'Typový štítek a označení dle 6.1, dokumentace dle 6.2']
+  ];
+  function renderProto() {
+    B.proto = B.proto || { checks: {}, Riso: '', who: '', date: '' };
+    const P = B.proto;
+    let h = '<div class="proto"><h2>Protokol o kusovém ověření rozváděče (ČSN EN 61439-1 čl. 11)</h2>' +
+      '<p>' + esc(B.meta.name) + ' ' + esc(B.meta.bmk) + ' · ' + esc(B.meta.network) + ' ' + esc(B.meta.U0) + '/' + esc(B.meta.Un) + ' V · InA ' + esc(calc.InA || '—') + ' A · ' + esc(B.meta.manufacturer) + '</p>' +
+      '<div class="chk">' + CHECKS.map(c => '<span>' + c[0] + ' – ' + esc(c[1]) + '</span><select data-pc="' + c[0] + '">' + opt([['', '—'], ['ok', 'vyhovuje'], ['nok', 'nevyhovuje'], ['na', 'neaplikuje se']], P.checks[c[0]] || '') + '</select>').join('') + '</div>' +
+      '<table class="res"><thead><tr><th>BMK</th><th>Okruh</th><th>Zs max výpočet [Ω]</th><th>Zs naměřeno [Ω]</th><th>Riso [MΩ]</th><th>RCD t [ms]</th><th>RCD IΔ [mA]</th><th>Vyhodnocení</th></tr></thead><tbody>';
+    for (const d of B.devices.filter(d => d.circuit)) {
+      const r = calc.circuits[d.id], me = d.circuit.meas || {};
+      const zs = C.num(me.Zs, NaN);
+      let ev = '';
+      if (isFinite(zs)) ev = zs <= (r.ZsMax || Infinity) ? '✔' : '✖ Zs';
+      if (me.Riso !== undefined && me.Riso !== '' && C.num(me.Riso) < 1) ev += ' ✖ Riso';
+      if (me.t !== undefined && me.t !== '' && C.num(me.t) > 300) ev += ' ✖ t';
+      h += '<tr data-id="' + d.id + '"><td class="t">' + esc(d.bmk) + '</td><td class="t">' + esc(d.circuit.name) + '</td><td>' + fx(r.ZsMax, 2) + '</td>' +
+        ['Zs', 'Riso', 't', 'I'].map(k => '<td><input data-me="' + k + '" value="' + esc(me[k] == null ? '' : me[k]) + '"></td>').join('') + '<td>' + ev + '</td></tr>';
+    }
+    h += '</tbody></table><div class="grid" style="margin-top:12px"><label class="f">Izolační odpor celého rozváděče [MΩ]<input data-pm="Riso" value="' + esc(P.Riso) + '"></label>' +
+      '<label class="f">Ověřil (jméno, osvědčení)<input data-pm="who" value="' + esc(P.who) + '"></label><label class="f">Datum<input type="date" data-pm="date" value="' + esc(P.date) + '"></label></div>' +
+      '<p class="hint">Mezní hodnoty: Riso ≥ 1 MΩ (500 V DC), RCD 30 mA vybavení ≤ 300 ms při IΔn. Naměřená Zs se porovnává s vypočtenou Zs max (bez korekce na teplotu – při měření za studena doporučeno ≤ 2/3 Zs max).</p>' +
+      '<button data-act="printProto" class="primary">🖶 Tisk protokolu</button></div>';
+    $('#protoOut').innerHTML = h;
+  }
+  $('#protoOut').addEventListener('change', e => {
+    const P = B.proto;
+    if (e.target.dataset.pc) P.checks[e.target.dataset.pc] = e.target.value;
+    if (e.target.dataset.pm) P[e.target.dataset.pm] = e.target.value;
+    if (e.target.dataset.me) { const d = B.devices.find(x => x.id === e.target.closest('tr').dataset.id); d.circuit.meas = d.circuit.meas || {}; d.circuit.meas[e.target.dataset.me] = e.target.value; }
+    update();
+  });
+
+  // ---------- CSV ----------
+  const CSV_COLS = ['row', 'bmk', 'type', 'poles', 'In', 'char', 'Icn', 'IdN', 'rcdType', 'parentBmk', 'label', 'name', 'kind', 'P', 'cos', 'ks', 'phase', 'cable', 'S', 'Spe', 'len', 'method', 'group', 'temp'];
+  function toCSV() {
+    const lines = [CSV_COLS.join(';')];
+    for (const d of B.devices) {
+      const c = d.circuit || {}, p = B.devices.find(x => x.id === d.parent);
+      const v = { row: d.row, bmk: d.bmk, type: d.type, poles: d.poles, In: d.In, char: d.char, Icn: d.Icn, IdN: d.IdN, rcdType: d.rcdType, parentBmk: p ? p.bmk : '', label: d.label,
+        name: c.name, kind: c.kind, P: c.P, cos: c.cos, ks: c.ks, phase: c.phase, cable: c.cable, S: c.S, Spe: c.Spe, len: c.len, method: c.method, group: c.group, temp: c.temp };
+      lines.push(CSV_COLS.map(k => { let s = v[k] == null ? '' : String(v[k]); if (typeof v[k] === 'number') s = s.replace('.', ','); return /[;"\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; }).join(';'));
+    }
+    return '﻿' + lines.join('\r\n');
+  }
+  function parseCSV(txt) {
+    txt = txt.replace(/^﻿/, '');
+    const rows = []; let cur = [''], q = false;
+    for (let i = 0; i < txt.length; i++) {
+      const ch = txt[i];
+      if (q) { if (ch === '"') { if (txt[i + 1] === '"') { cur[cur.length - 1] += '"'; i++; } else q = false; } else cur[cur.length - 1] += ch; }
+      else if (ch === '"') q = true;
+      else if (ch === ';' || ch === '\t') cur.push('');
+      else if (ch === '\n') { rows.push(cur); cur = ['']; }
+      else if (ch !== '\r') cur[cur.length - 1] += ch;
+    }
+    if (cur.length > 1 || cur[0]) rows.push(cur);
+    const head = rows.shift().map(s => s.trim());
+    const devs = [], byBmk = {};
+    for (const r of rows) {
+      const o = {}; head.forEach((h, i) => o[h] = (r[i] || '').trim());
+      if (!o.type || !D.DEVICE_TYPES[o.type]) continue;
+      const n = s => C.num(s);
+      const d = D.dev(o.type, { row: n(o.row) || 1, bmk: o.bmk, poles: n(o.poles) || D.DEVICE_TYPES[o.type].poles[0], In: n(o.In) || 16, char: o.char || 'B', Icn: n(o.Icn) || 6, IdN: n(o.IdN) || 30, rcdType: o.rcdType || 'A', label: o.label || '' });
+      if (d.circuit) Object.assign(d.circuit, { name: o.name, kind: o.kind || 'other', P: n(o.P), cos: n(o.cos) || 1, ks: o.ks === '' ? null : n(o.ks), phase: o.phase || 'L1', cable: o.cable, S: n(o.S) || 2.5, Spe: n(o.Spe) || n(o.S) || 2.5, len: n(o.len), method: o.method || 'C', group: n(o.group) || 1, temp: n(o.temp) || 30 });
+      d._pb = o.parentBmk; devs.push(d); if (d.bmk) byBmk[d.bmk] = d;
+    }
+    devs.forEach(d => { if (d._pb && byBmk[d._pb]) d.parent = byBmk[d._pb].id; delete d._pb; });
+    return devs;
+  }
+
+  // ---------- akce ----------
+  const fileIn = $('#fileIn'); let fileMode = 'json';
+  fileIn.addEventListener('change', () => {
+    const f = fileIn.files[0]; if (!f) return;
+    const rd = new FileReader();
+    rd.onload = () => {
+      try {
+        if (fileMode === 'csv' || /\.(csv|txt)$/i.test(f.name)) {
+          const devs = parseCSV(rd.result);
+          if (!devs.length) throw new Error('V CSV nejsou žádné řádky s platným sloupcem „type“.');
+          B.devices = devs; flash('Načteno ' + devs.length + ' přístrojů z CSV');
+        } else {
+          const nb = JSON.parse(rd.result); if (!nb.meta || !Array.isArray(nb.devices)) throw new Error('Soubor není projekt rozváděče.');
+          B = nb; B.meta = Object.assign(D.newBoard().meta, B.meta); flash('Otevřeno: ' + f.name);
+        }
+        sel = null; renderBoard(); update();
+      } catch (err) { alert('Chyba načtení: ' + err.message); }
+      fileIn.value = '';
+    };
+    rd.readAsText(f, 'utf-8');
+  });
+  document.querySelector('.bar').addEventListener('click', e => act(e.target.dataset.act));
+  $('#addbar').addEventListener('click', e => act(e.target.dataset.act));
+  $('#protoOut').addEventListener('click', e => act(e.target.dataset.act));
+  function act(a) {
+    if (!a) return;
+    if (a === 'new') { if (confirm('Založit nový prázdný rozváděč? Neuložené změny se ztratí.')) { B = D.templateEmpty(); sel = null; renderBoard(); update(); } }
+    if (a === 'tpl') { if (confirm('Načíst vzorový rozváděč rodinného domu? Aktuální projekt se přepíše.')) { B = D.templateRD(); sel = null; renderBoard(); update(); } }
+    if (a === 'open') { fileMode = 'json'; fileIn.accept = '.json'; fileIn.click(); }
+    if (a === 'csvin') { fileMode = 'csv'; fileIn.accept = '.csv,.txt'; fileIn.click(); }
+    if (a === 'save') download(fname('.json'), JSON.stringify(B, null, 1), 'application/json');
+    if (a === 'csv') download(fname('_okruhy.csv'), toCSV(), 'text/csv;charset=utf-8');
+    if (a === 'print' || a === 'printProto') {
+      if (a === 'printProto') switchTab('proto');
+      document.querySelectorAll('.tab').forEach(t => t.classList.toggle('printing', t.id === 'tab-' + tab));
+      window.print();
+    }
+    if (a === 'balance') { C.balance(B); flash('Fáze přerozděleny'); update(); }
+    if (a === 'renum') { C.renumber(B); flash('BMK přečíslována'); update(); }
+    if (a === 'autoS') {
+      let n = 0;
+      for (const d of B.devices.filter(d => d.circuit)) { const s = C.suggestS(B, d); if (s && s !== d.circuit.S) { d.circuit.S = s; d.circuit.Spe = s <= 16 ? s : Math.max(16, s / 2); syncCableName(d); n++; } }
+      flash(n ? 'Upraveno průřezů: ' + n : 'Průřezy vyhovují'); update();
+    }
+  }
+  function flash(s) { const el = $('#status'); el.textContent = s; clearTimeout(flash.t); flash.t = setTimeout(() => { el.textContent = ''; }, 3500); }
+
+  // ---------- záložky ----------
+  $('#tabs').addEventListener('click', e => { const t = e.target.dataset.tab; if (t) { switchTab(t); renderTab(); } });
+  function switchTab(t) {
+    tab = t;
+    document.querySelectorAll('#tabs button').forEach(b => b.classList.toggle('on', b.dataset.tab === t));
+    document.querySelectorAll('.tab').forEach(s => s.classList.toggle('on', s.id === 'tab-' + t));
+  }
+  function renderTab() {
+    if (tab === 'devices') { renderDevices(); renderMini(); }
+    if (tab === 'calc') renderCalc();
+    if (tab === 'front') $('#frontOut').innerHTML = R.toSVG(R.front(B, {}));
+    if (tab === 'sl') $('#slOut').innerHTML = R.toSVG(R.singleLine(B, calc));
+    if (tab === 'ml') $('#mlOut').innerHTML = R.toSVG(R.multiLine(B, calc));
+    if (tab === 'labels') {
+      $('#labOut').innerHTML = R.toSVG(R.labelStrips(B), { mm: true });
+      $('#plateOut').innerHTML = R.toSVG(R.nameplate(B, calc), { mm: true });
+      $('#listOut').innerHTML = R.toSVG(R.circuitList(B, calc), { mm: true });
+    }
+    if (tab === 'proto') renderProto();
+  }
+  function update() {
+    calc = C.board(B);
+    persist();
+    const nErr = calc.msgs.filter(m => m.lvl === 'err').length + Object.values(calc.circuits).filter(c => !c.ok).length;
+    document.querySelector('[data-tab="calc"]').textContent = '3 · Výpočty ' + (nErr ? '✖ ' + nErr : '✔');
+    renderTab();
+  }
+
+  $('#helpOut').innerHTML = `
+<h2>Jak s programem pracovat</h2>
+<ol>
+<li><b>Rozváděč</b> – vyplňte soustavu, Ze (změřená impedance smyčky na přívodu), Ik3, velikost skříně (řady × moduly) a Pde z katalogu skříně. Údaje pro typový štítek.</li>
+<li><b>Přístroje a vývody</b> – přidávejte přístroje tlačítky „+“. Nový přístroj se vloží za vybraný řádek. Jistič přiřaďte ke chrániči ve sloupci <i>Za chráničem</i>. Řada určuje, na které DIN liště přístroj sedí; pořadí v tabulce = pořadí zleva doprava. Kliknutím na přístroj v náhledu jej vyberete.</li>
+<li><b>Výpočty</b> – Ib, Iz s přepočtem na teplotu a seskupení, Ib ≤ In ≤ Iz, I2 ≤ 1,45·Iz, úbytek napětí, Zs a Ik1 min, doba odpojení, požadavek RCD 30 mA, vypínací schopnost, zatížení chráničů, soudobost, RDF, ztrátový výkon vs. Pde, symetrie fází.</li>
+<li><b>Pohled, Jednopólové, Vícepólové</b> – výkresy se generují automaticky. Export do <b>DXF</b> (AutoCAD, DraftSight, EPLAN import), SVG, PNG, nebo tisk.</li>
+<li><b>Štítky</b> – popisové pruhy 1:1 nad přístroje, typový štítek dle EN 61439-1 čl. 6.1, výstražný štítek a seznam okruhů (na dvířka) – CZ / DE / EN.</li>
+<li><b>Protokol</b> – kusové ověření dle EN 61439-1 čl. 11 s naměřenými hodnotami.</li>
+</ol>
+<h3>Překreslení stávajícího rozváděče</h3>
+<p>Nejrychlejší je <b>Export CSV</b> → doplnit v Excelu (oddělovač středník, desetinná čárka) → <b>Import CSV</b>. Sloupec <code>type</code>: ${Object.keys(D.DEVICE_TYPES).map(k => '<code>' + k + '</code>').join(', ')}. Druh zátěže <code>kind</code>: ${Object.keys(D.LOAD_KINDS).map(k => '<code>' + k + '</code>').join(', ')}. Fáze <code>L1/L2/L3/L123</code>. <code>parentBmk</code> = označení chrániče, pod kterým vývod je.</p>
+<h3>Ukládání</h3>
+<p>Projekt se průběžně ukládá v prohlížeči (na tomto počítači). Pro archivaci a přenos použijte <b>Uložit (.json)</b> – soubor lze kdykoli znovu otevřít.</p>
+<h3>Normy a předpisy</h3>
+<table class="res"><thead><tr><th>Oblast</th><th>EU / CZ</th><th>DE</th></tr></thead><tbody>
+<tr><td class="t">Rozváděče, štítek, oteplení, RDF</td><td class="t">ČSN EN IEC 61439-1, -2, -3</td><td class="t">DIN EN IEC 61439 (VDE 0660-600)</td></tr>
+<tr><td class="t">Samočinné odpojení, RCD</td><td class="t">ČSN 33 2000-4-41 ed. 3</td><td class="t">DIN VDE 0100-410</td></tr>
+<tr><td class="t">Ochrana proti nadproudům</td><td class="t">ČSN 33 2000-4-43</td><td class="t">DIN VDE 0100-430</td></tr>
+<tr><td class="t">Zatížitelnost, úbytek napětí</td><td class="t">ČSN 33 2000-5-52 ed. 2</td><td class="t">DIN VDE 0100-520, VDE 0298-4, DIN 18015-1</td></tr>
+<tr><td class="t">Přepětí (SPD)</td><td class="t">ČSN 33 2000-4-443, -5-534</td><td class="t">DIN VDE 0100-443, -534</td></tr>
+<tr><td class="t">Revize / výchozí ověření</td><td class="t">ČSN 33 2000-6, ČSN 33 1500</td><td class="t">DIN VDE 0100-600, DGUV V3</td></tr>
+<tr><td class="t">Značení vodičů, BMK</td><td class="t">ČSN EN 60445, ČSN EN IEC 81346</td><td class="t">DIN EN 60445, DIN EN IEC 81346</td></tr>
+<tr><td class="t">Připojení k síti (DE)</td><td class="t">PNE 33 3302 (připojení ČEZ/EG.D/PRE)</td><td class="t">VDE-AR-N 4100, TAB des Netzbetreibers</td></tr>
+</tbody></table>
+<p class="hint">Upozornění: program je pomůcka pro návrh. Tabulkové hodnoty jsou převzaty z IEC 60364-5-52 a typických katalogových údajů; před realizací ověřte vůči platnému vydání norem, podmínkám distributora a katalogům výrobců přístrojů. Odpovědnost za návrh a revizi nese oprávněná osoba.</p>`;
+
+  renderBoard(); update();
+})();
+
+</script>
+</body>
+</html>

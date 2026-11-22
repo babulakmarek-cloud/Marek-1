@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Návrh rozváděče</title>
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<header class="bar">
+  <strong class="brand">⚡ Návrh rozváděče</strong>
+  <div class="tools">
+    <button data-act="new">Nový</button>
+    <button data-act="tpl">Šablona RD</button>
+    <button data-act="open">Otevřít…</button>
+    <button data-act="save">Uložit (.json)</button>
+    <button data-act="csv">Export CSV</button>
+    <button data-act="csvin">Import CSV…</button>
+    <button data-act="print" class="primary">Tisk / PDF</button>
+    <input type="file" id="fileIn" accept=".json,.csv,.txt" hidden>
+  </div>
+  <span id="status" class="status"></span>
+</header>
+
+<nav class="tabs" id="tabs">
+  <button data-tab="board" class="on">1 · Rozváděč</button>
+  <button data-tab="devices">2 · Přístroje a vývody</button>
+  <button data-tab="calc">3 · Výpočty</button>
+  <button data-tab="front">4 · Pohled</button>
+  <button data-tab="sl">5 · Jednopólové</button>
+  <button data-tab="ml">6 · Vícepólové</button>
+  <button data-tab="labels">7 · Štítky</button>
+  <button data-tab="proto">8 · Protokol</button>
+  <button data-tab="help">?</button>
+</nav>
+
+<main>
+  <section id="tab-board" class="tab on">
+    <div class="grid" id="boardForm"></div>
+  </section>
+
+  <section id="tab-devices" class="tab">
+    <div class="addbar" id="addbar"></div>
+    <div class="split">
+      <div class="tablewrap"><table class="dev" id="devTable"></table></div>
+      <div class="preview" id="miniFront"></div>
+    </div>
+  </section>
+
+  <section id="tab-calc" class="tab"><div id="calcOut"></div></section>
+  <section id="tab-front" class="tab"><div class="dl" data-sheet="front"></div><div class="drawing" id="frontOut"></div></section>
+  <section id="tab-sl" class="tab"><div class="dl" data-sheet="singleLine"></div><div class="drawing" id="slOut"></div></section>
+  <section id="tab-ml" class="tab"><div class="dl" data-sheet="multiLine"></div><div class="drawing" id="mlOut"></div></section>
+  <section id="tab-labels" class="tab">
+    <p class="hint">Popisky a štítky se generují v jazyce zvoleném v záložce 1 (CZ / DE / EN). Tisk 1:1 – v dialogu tisku nastavte měřítko <b>100 %</b> (ne „přizpůsobit stránce“).</p>
+    <div class="dl" data-sheet="labelStrips"></div><div class="drawing mm" id="labOut"></div>
+    <div class="dl" data-sheet="nameplate"></div><div class="drawing mm" id="plateOut"></div>
+    <div class="dl" data-sheet="circuitList"></div><div class="drawing mm" id="listOut"></div>
+  </section>
+  <section id="tab-proto" class="tab"><div id="protoOut"></div></section>
+  <section id="tab-help" class="tab"><div class="help" id="helpOut"></div></section>
+</main>
+
+<script src="js/data.js"></script>
+<script src="js/calc.js"></script>
+<script src="js/draw.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
